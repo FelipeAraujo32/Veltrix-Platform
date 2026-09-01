@@ -1,26 +1,11 @@
-# Veltrix Platform — kernel (auth + gateway + portal + redis).
-#
-#   docker compose --env-file .env up -d --build
-#
-# BANCO: usa um SQL Server EXTERNO — o container chamado `sqlserver` já existente
-# no host. Setup único (uma vez por máquina), com a stack criada:
-#   docker network connect veltrix-platform_veltrix sqlserver
-#   docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
-#     -P "$(cat secrets/mssql_sa_password)" -C \
-#     -Q "IF DB_ID('veltrix_auth') IS NULL CREATE DATABASE veltrix_auth;"
-# A senha em secrets/mssql_sa_password é a do SA desse container externo.
-# (Sem SQL Server na máquina? Crie um:
-#   docker run -d --name sqlserver --restart unless-stopped -p 127.0.0.1:1433:1433 \
-#     -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$(cat secrets/mssql_sa_password)" \
-#     mcr.microsoft.com/mssql/server:2022-latest )
-#
-# SEGREDOS: mecanismo `secrets:` (arquivos em ./secrets/, dir gitignored) —
-# senha do banco + chave privada JWT. Spring lê via configtree em /run/secrets.
-# Fail-closed: secret ausente => serviço não sobe.
-#
-# PORTAS: gateway (8080) e portal (4200) publicados SÓ no loopback — o público
-# entra pelo proxy reverso (Nginx Proxy Manager/edge TLS) nas portas 80/443,
-# que alcança o portal pela rede Docker (portal-home:8080).
+# Nome fixo do projeto: rede/volume viram veltrix-platform_* independente do
+# nome da pasta no host (mantém válido o `docker network connect` documentado).
+name: veltrix-platform
+
+# Rotação de log dos containers (evita disco cheio no servidor).
+x-logging: &default-logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
 
 networks:
   veltrix:
@@ -39,6 +24,9 @@ services:
   # ---------------------------------------------------------------- infra
   redis:
     image: redis:7.4-alpine
+    container_name: veltrix-redis
+    restart: unless-stopped
+    logging: *default-logging
     command: ["redis-server", "--appendonly", "yes"]
     networks: [veltrix]
     volumes: ["redis-data:/data"]
@@ -52,6 +40,9 @@ services:
   # ---------------------------------------------------------------- auth (emissor JWT)
   auth-service:
     build: { context: ., dockerfile: security/auth-service/Dockerfile }
+    container_name: veltrix-auth-service
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       redis: { condition: service_healthy }
     networks: [veltrix]
@@ -102,6 +93,9 @@ services:
   # ---------------------------------------------------------------- gateway
   api-gateway:
     build: { context: ., dockerfile: security/api-gateway/Dockerfile }
+    container_name: veltrix-api-gateway
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       auth-service: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -142,6 +136,9 @@ services:
       args:
         APP_NAME: portal-home
     image: veltrix/portal-home:local
+    container_name: veltrix-portal-home
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       api-gateway: { condition: service_healthy }
     networks: [veltrix]

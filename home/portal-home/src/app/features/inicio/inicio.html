@@ -1,15 +1,36 @@
 <section class="hero">
+  <!-- Esteira decorativa de "mini-telas" dos produtos, atrás do texto -->
+  <div class="hero-carousel" aria-hidden="true">
+    <div class="carousel-tilt">
+      @for (row of [0, 1]; track row) {
+        <div class="carousel-row" [class.carousel-row-reverse]="row === 1">
+          @for (half of [0, 1]; track half) {
+            @for (product of marquee; track $index) {
+              <article class="mini-card">
+                <header class="mini-head">
+                  <span class="mini-ic">{{ product.name.charAt(0) }}</span>
+                  <span class="mini-name">{{ product.name }}</span>
+                </header>
+                <div class="mini-ui mini-ui-{{ product.key.toLowerCase() }}"></div>
+              </article>
+            }
+          }
+        </div>
+      }
+    </div>
+    <div class="carousel-veil"></div>
+  </div>
   <div class="hero-glow" aria-hidden="true"></div>
   <div class="page hero-grid">
     <div class="hero-copy">
       <span class="eyebrow eyebrow-light">Inteligência Operacional Integrada</span>
-      <h1>Seus sistemas de atendimento em <span class="key-word">um só acesso</span>.</h1>
-      <p class="lead">Uma plataforma, vários módulos: cada sistema entra no mesmo login e na mesma fatura. Contrate só o que a sua organização precisa — um login para a equipe, uma fatura para a organização.</p>
+      <h1>Todos os sistemas da sua operação.<br><span class="key-word">Um só acesso</span>.</h1>
+      <p class="lead">A Veltrix é uma plataforma modular: cada sistema que a sua organização precisa entra no mesmo login, na mesma fatura e no mesmo painel. Contrate um módulo hoje, ligue os próximos quando fizer sentido e pare de empilhar sistemas que não conversam entre si.</p>
       <div class="actions">
         @if (auth.isAuthenticated()) {
           <a class="button button-accent" [routerLink]="auth.areaClienteLink()">Ir para meus sistemas<span class="arrow" aria-hidden="true">→</span></a>
         } @else {
-          <a class="button button-accent" routerLink="/produtos">Conhecer os produtos<span class="arrow" aria-hidden="true">→</span></a>
+          <a class="button button-accent" routerLink="/produtos">Conhecer os módulos<span class="arrow" aria-hidden="true">→</span></a>
         }
         <a class="button button-glass" routerLink="/contato">Falar com a Veltrix</a>
       </div>
@@ -20,7 +41,7 @@
 <section class="page mechanics">
   <span class="eyebrow">Como funciona</span>
   <h2>Um login por pessoa. Uma fatura por organização.</h2>
-  <p class="lead mechanics-lead">Ninguém configura acesso à mão. A cada entrada no portal, cruzamos quem a pessoa é com o que a organização contratou — e liberamos só isso.</p>
+  <p class="lead mechanics-lead">Ninguém configura acesso à mão. Toda vez que alguém entra na plataforma, a Veltrix confere quem é a pessoa e o que a organização contratou — e libera exatamente isso, em qualquer módulo.</p>
 
   <div class="equation">
     <article class="term card">
@@ -29,7 +50,7 @@
       </span>
       <span class="term-key readout">Identidade</span>
       <h3>Quem é você</h3>
-      <p>Cada pessoa tem um único login, com papéis e permissões definidos pela sua organização — gestor, atendente, financeiro.</p>
+      <p>Cada pessoa tem um único login, com o papel que a sua organização definiu: gestor, operador, financeiro. Mudou de função? Muda o papel, não o login.</p>
     </article>
 
     <span class="op" aria-hidden="true">×</span>
@@ -40,7 +61,7 @@
       </span>
       <span class="term-key readout">Contratação</span>
       <h3>O que você contratou</h3>
-      <p>Contrate um módulo hoje e ligue os outros quando precisar. A fatura cobra só o que está ativo.</p>
+      <p>Comece com um módulo e ligue os outros quando a operação pedir. A fatura mostra só o que está ativo — sem pacote fechado, sem surpresa.</p>
     </article>
 
     <span class="op" aria-hidden="true">=</span>
@@ -51,47 +72,48 @@
       </span>
       <span class="term-key readout">Acesso</span>
       <h3>Só o que é seu</h3>
-      <p>Cruzamos os dois a cada acesso: cada pessoa entra nos módulos contratados, com as permissões do seu papel — e nada além disso.</p>
+      <p>A cada entrada, cruzamos os dois: a pessoa vê os módulos contratados, com as permissões do seu papel — e nada além disso.</p>
     </article>
   </div>
 </section>
 
 <section class="page modules">
   <span class="eyebrow">Módulos</span>
-  <h2>Módulos que já nascem conectados.</h2>
-  <p class="lead">Cada módulo tem seu preço e entra no mesmo login e na mesma fatura. Contrate só o que faz sentido hoje.</p>
+  <h2>Uma plataforma. Vários sistemas. Todos conversando entre si.</h2>
+  <p class="lead">Cada módulo resolve uma parte da operação e tem preço próprio. Todos compartilham o mesmo login, o mesmo cadastro e a mesma fatura — você monta a plataforma no ritmo da sua organização.</p>
   <div class="prod-grid">
     @for (product of products; track product.key) {
       <app-produto-card [product]="product" />
     }
   </div>
-  <p class="modules-all"><a routerLink="/produtos">Ver todos os produtos<span aria-hidden="true"> →</span></a></p>
+  <p class="modules-all"><a routerLink="/produtos">Ver todos os módulos e preços<span aria-hidden="true"> →</span></a></p>
 </section>
 
 <section class="page security">
-  <span class="eyebrow">Segurança</span>
-  <h2>Feito para quem não pode errar no atendimento.</h2>
+  <span class="eyebrow">Segurança e conformidade</span>
+  <h2>Feito para operações que não podem errar.</h2>
+  <p class="lead">Empresa ou órgão público, a regra é a mesma: é preciso provar quem fez o quê, e quando. A Veltrix já nasce assim, em todos os módulos.</p>
   <div class="sec-grid">
     <article class="sec-item">
       <span class="term-ic" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h8l4 4v13H6Z"/><path d="M9 8.5h3M9 12h6M9 15.5h6"/></svg>
       </span>
       <h3>Acesso auditado</h3>
-      <p>Cada entrada fica registrada: quem acessou, qual módulo e quando.</p>
+      <p>Cada acesso fica registrado: quem entrou, em qual módulo e quando. Trilha pronta para auditoria e para a LGPD.</p>
     </article>
     <article class="sec-item">
       <span class="term-ic" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l7 2.8v5.2c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6.3Z"/><path d="M9 11.8l2.2 2.2 4.2-4.4"/></svg>
       </span>
       <h3>Sessão protegida</h3>
-      <p>Login renovado com segurança; ao sair, a sessão é revogada no servidor e nenhuma aba consegue renová-la.</p>
+      <p>A sessão é renovada com segurança e encerrada no servidor ao sair — nenhuma aba esquecida continua aberta.</p>
     </article>
     <article class="sec-item">
       <span class="term-ic" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg>
       </span>
       <h3>Só o que foi contratado</h3>
-      <p>A permissão é conferida a cada acesso, por pessoa e por módulo.</p>
+      <p>A permissão é conferida a cada acesso, por pessoa e por módulo. Ninguém vê o que não é da sua organização.</p>
     </article>
   </div>
 </section>
@@ -102,11 +124,11 @@
 
 <section class="page quem-somos">
   <span class="eyebrow">Quem somos</span>
-  <h2>A Veltrix organiza a operação de quem atende o público.</h2>
-  <p class="lead">Somos uma plataforma de inteligência operacional integrada para órgãos públicos e empresas que atendem o público. Identidade, contratação e módulos de atendimento moram no mesmo lugar: um login por pessoa, uma fatura por organização e acesso auditado em cada módulo — a sua operação cresce contratando módulos, não sistemas avulsos.</p>
+  <h2>A Veltrix organiza a operação de empresas e órgãos públicos.</h2>
+  <p class="lead">Somos uma plataforma de inteligência operacional integrada: identidade, contratação e sistemas de gestão no mesmo lugar. Um login por pessoa, uma fatura por organização e acesso auditado em cada módulo — a sua operação cresce contratando módulos, não empilhando sistemas avulsos.</p>
   <div class="actions">
     <a class="button button-secondary" routerLink="/sobre">Conheça a Veltrix</a>
-    <a class="button button-accent" routerLink="/produtos">Ver os produtos</a>
+    <a class="button button-accent" routerLink="/produtos">Ver os módulos</a>
   </div>
 </section>
 
@@ -114,7 +136,7 @@
   <div class="card">
     <div>
       <h2>Não sabe por onde começar?</h2>
-      <p class="muted">Conte como é o seu atendimento hoje e a gente monta o conjunto de módulos ideal.</p>
+      <p class="muted">Conte como é a sua operação hoje — quantas pessoas, quais sistemas, o que mais trava. A gente indica por qual módulo começar, sem compromisso.</p>
     </div>
     <a class="button button-secondary" routerLink="/contato">Falar com a Veltrix</a>
   </div>
@@ -123,11 +145,11 @@
 <section class="cta-band">
   <div class="page cta-inner">
     <div>
-      <h2>Comece pelo que você precisa hoje. Adicione o resto quando fizer sentido.</h2>
-      <p>Preço por módulo, contratação online e um só login para toda a equipe.</p>
+      <h2>Comece pelo que aperta hoje. O resto entra quando fizer sentido.</h2>
+      <p>Preço por módulo, um login para toda a equipe e cada acesso registrado. Você cresce contratando módulos, não sistemas.</p>
     </div>
     <div class="actions">
-      <a class="button button-accent" routerLink="/produtos">Conhecer os produtos</a>
+      <a class="button button-accent" routerLink="/produtos">Conhecer os módulos</a>
       <a class="button button-glass" routerLink="/contato">Falar com a Veltrix</a>
     </div>
   </div>

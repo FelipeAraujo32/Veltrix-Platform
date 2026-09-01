@@ -3,20 +3,27 @@
 #   docker compose --env-file .env up -d --build
 #
 # BANCO: usa um SQL Server EXTERNO — o container chamado `sqlserver` já existente
-# no host. Setup único (uma vez por máquina), com a stack criada:
+# no host (fora deste compose). Banco ÚNICO da plataforma: `veltrix_platform`,
+# com um SCHEMA por módulo (security, ouvidoria, financeiro, ...) — schema é o
+# namespace E a fronteira de permissão; nada de prefixo no nome da tabela.
+#
+# Setup único (uma vez por máquina), como SA, com secrets/auth_db_password já criado:
 #   docker network connect veltrix-platform_veltrix sqlserver
 #   docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
 #     -P "$(cat secrets/mssql_sa_password)" -C \
-#     -Q "IF DB_ID('veltrix_auth') IS NULL CREATE DATABASE veltrix_auth;"
-# A senha em secrets/mssql_sa_password é a do SA desse container externo.
-# (Sem SQL Server na máquina? Crie um:
-#   docker run -d --name sqlserver --restart unless-stopped -p 127.0.0.1:1433:1433 \
-#     -e ACCEPT_EULA=Y -e MSSQL_SA_PASSWORD="$(cat secrets/mssql_sa_password)" \
-#     mcr.microsoft.com/mssql/server:2022-latest )
+#     -Q "IF DB_ID('veltrix_platform') IS NULL CREATE DATABASE veltrix_platform;"
+#   docker exec sqlserver /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa \
+#     -P "$(cat secrets/mssql_sa_password)" -C -d veltrix_platform \
+#     -Q "CREATE LOGIN veltrix WITH PASSWORD='$(cat secrets/auth_db_password)', CHECK_POLICY=ON; EXEC('CREATE SCHEMA [security]'); CREATE USER veltrix FOR LOGIN veltrix WITH DEFAULT_SCHEMA=[security]; GRANT ALTER, CONTROL ON SCHEMA::[security] TO veltrix; GRANT CREATE TABLE, CREATE VIEW, CREATE PROCEDURE TO veltrix;"
+# Least-privilege: o `veltrix` só tem DDL/DML dentro do schema `security` (o que o
+# Flyway precisa) + CREATE de banco exigido pelo SQL Server — sem db_owner, sem dbo.
+# A aplicação NUNCA conecta como `sa`; o SA (e o arquivo com a senha dele) é só
+# do container `sqlserver` e não é montado em nenhum serviço deste compose.
 #
 # SEGREDOS: mecanismo `secrets:` (arquivos em ./secrets/, dir gitignored) —
-# senha do banco + chave privada JWT. Spring lê via configtree em /run/secrets.
-# Fail-closed: secret ausente => serviço não sobe.
+# senha do login `veltrix`, chave privada JWT e senha do admin inicial (este
+# último pode ficar VAZIO fora da primeira subida). Spring lê via configtree em
+# /run/secrets. Fail-closed: secret ausente => serviço não sobe.
 #
 # PORTAS: gateway (8080) e portal (4200) publicados SÓ no loopback — o público
 # entra pelo proxy reverso (Nginx Proxy Manager/edge TLS) nas portas 80/443,
@@ -30,18 +37,31 @@ volumes:
   redis-data: {}
 
 secrets:
+  # Senha do login `veltrix` (bloco de provisionamento no topo) — nunca a do SA.
   auth_db_password:
-    file: ${AUTH_DB_PASSWORD_FILE:-./secrets/mssql_sa_password}
+    file: ${AUTH_DB_PASSWORD_FILE:-./secrets/auth_db_password}
   jwt_private_key:
     file: ${JWT_PRIVATE_KEY_HOST_PATH:-./secrets/jwt-private.pem}
+  # Senha do admin inicial. O compose exige que o ARQUIVO exista; fora da primeira
+  # subida deixe-o VAZIO (com bootstrap desligado é ignorado; ligado sem senha o
+  # boot falha com mensagem clara — fail-closed, ver AdminBootstrap).
+  auth_bootstrap_password:
+    file: ${AUTH_BOOTSTRAP_PASSWORD_FILE:-./secrets/auth_bootstrap_password}
 
 services:
   # ---------------------------------------------------------------- infra
   redis:
     image: redis:7.4-alpine
-    command: ["redis-server", "--appendonly", "yes"]
+    # maxmemory < limite do container (folga p/ overhead do processo). allkeys-lru:
+    # sob pressão, chaves de lockout/rate-limit podem ser evictadas — coerente com o
+    # fail-open declarado dessas features (nunca trava login por falta de memória).
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
     networks: [veltrix]
     volumes: ["redis-data:/data"]
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -61,11 +81,16 @@ services:
         target: spring.datasource.password
       - source: jwt_private_key
         target: veltrix-jwt-private.pem
+      - source: auth_bootstrap_password
+        target: auth.bootstrap.password
     environment:
       SPRING_PROFILES_ACTIVE: prod
       AUTH_SERVER_PORT: 8082
-      DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=veltrix_auth;encrypt=true;trustServerCertificate=${SQL_TRUST_SERVER_CERT:-false}
-      DB_USERNAME: ${AUTH_DB_USERNAME:-sa}
+      # Imagem não define JAVA_TOOL_OPTIONS: heap dimensionada pelo limite do container.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC"
+      # Banco único da plataforma (schema por módulo — o auth usa `security`).
+      DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=${DB_NAME:-veltrix_platform};encrypt=true;trustServerCertificate=${SQL_TRUST_SERVER_CERT:-false}
+      DB_USERNAME: ${AUTH_DB_USERNAME:-veltrix}
       JWT_PRIVATE_KEY_PATH: /run/secrets/veltrix-jwt-private.pem
       JWT_KEY_ID: ${JWT_KEY_ID:?defina JWT_KEY_ID no .env}
       JWT_ISSUER: ${JWT_ISSUER:?defina JWT_ISSUER no .env}
@@ -74,9 +99,12 @@ services:
       JWT_REFRESH_TTL_SECONDS: ${JWT_REFRESH_TTL_SECONDS:-2592000}
       AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
       AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:4200}
+      # Bootstrap do admin: a SENHA não passa por env — mora no arquivo
+      # secrets/auth_bootstrap_password (montado como property auth.bootstrap.password).
+      # Primeira subida: preencha o arquivo + enabled=true + email; depois volte
+      # enabled=false e ESVAZIE o arquivo. enabled=true sem senha => boot falha.
       AUTH_BOOTSTRAP_ENABLED: ${AUTH_BOOTSTRAP_ENABLED:-false}
       AUTH_BOOTSTRAP_EMAIL: ${AUTH_BOOTSTRAP_EMAIL:-}
-      AUTH_BOOTSTRAP_PASSWORD: ${AUTH_BOOTSTRAP_PASSWORD:-}
       AUTH_BOOTSTRAP_NAME: ${AUTH_BOOTSTRAP_NAME:-Administrador}
       # Lockout de login usa Redis. Sem AUTH_REDIS_URL o serviço cairia no default
       # localhost:6379 (não há Redis no container do auth) e o lockout ficaria fail-open.
@@ -92,6 +120,10 @@ services:
       AUTH_LOCKOUT_ACCOUNT_MAX_ATTEMPTS: ${AUTH_LOCKOUT_ACCOUNT_MAX_ATTEMPTS:-30}
       AUTH_LOCKOUT_ACCOUNT_BLOCK: ${AUTH_LOCKOUT_ACCOUNT_BLOCK:-5m}
       AUTH_LOCKOUT_ACCOUNT_FAIL_WINDOW: ${AUTH_LOCKOUT_ACCOUNT_FAIL_WINDOW:-10m}
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8082/actuator/health"]
       interval: 30s
@@ -111,6 +143,8 @@ services:
       - "127.0.0.1:8080:8080"
     environment:
       SPRING_PROFILES_ACTIVE: prod
+      # Imagem não define JAVA_TOOL_OPTIONS: heap dimensionada pelo limite do container.
+      JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=70 -XX:+UseSerialGC"
       GATEWAY_SERVER_PORT: 8080
       AUTH_SERVICE_URI: http://auth-service:8082
       JWT_JWK_SET_URI: http://auth-service:8082/.well-known/jwks.json
@@ -127,6 +161,10 @@ services:
       RATE_LIMIT_LOGIN_WINDOW: ${RATE_LIMIT_LOGIN_WINDOW:-1m}
       RATE_LIMIT_GLOBAL_LIMIT: ${RATE_LIMIT_GLOBAL_LIMIT:-300}
       RATE_LIMIT_GLOBAL_WINDOW: ${RATE_LIMIT_GLOBAL_WINDOW:-1m}
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     healthcheck:
       test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
       interval: 30s
@@ -144,7 +182,11 @@ services:
     image: veltrix/portal-home:local
     depends_on:
       api-gateway: { condition: service_healthy }
-    networks: [veltrix]
+    networks:
+      veltrix:
+        # Nome estável que o NPM usa no proxy host (veltrix-web:8080) — o forward
+        # é sempre por NOME na rede Docker, nunca por IP (IP só na Cloudflare).
+        aliases: [veltrix-web]
     # Loopback: acesso público só via proxy reverso (que usa a rede Docker).
     ports:
       - "127.0.0.1:4200:8080"
@@ -153,6 +195,10 @@ services:
       PORTAL_URL: ${PORTAL_URL:-http://localhost:4200}
       GATEWAY_HOST: api-gateway
       GATEWAY_PORT: 8080
+    deploy:
+      resources:
+        limits:
+          memory: 128M
     read_only: true
     tmpfs:
       - /etc/nginx/conf.d:uid=101,gid=101,mode=0755

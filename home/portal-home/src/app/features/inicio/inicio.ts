@@ -14,4 +14,7 @@ export class Inicio {
   protected readonly auth = inject(AuthService);
   /** Catálogo da seção "Módulos" — mesma fonte de /produtos. */
   protected readonly products = PRODUCTS;
+  /** Metade da esteira do hero (4 cópias do catálogo); o template desenha 2 metades
+   *  idênticas por fileira — o loop da animação salta -50% sem emenda visível. */
+  protected readonly marquee = Array(4).fill(PRODUCTS).flat();
 }

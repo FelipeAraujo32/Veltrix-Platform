@@ -1,5 +1,6 @@
 .contato { padding-block: 3.2rem 4rem; }
 .interesse { margin-top: .4rem; }
+.lgpd-nota { margin: 1.2rem 0 0; color: var(--muted); max-width: 60ch; }
 
 .contato-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

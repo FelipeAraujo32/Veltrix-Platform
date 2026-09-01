@@ -5,7 +5,7 @@
   <div class="foot-grid">
     <nav class="foot-col" aria-label="Produto">
       <strong>Produto</strong>
-      <a routerLink="/produtos">Todos os produtos</a>
+      <a routerLink="/produtos">Todos os módulos e preços</a>
     </nav>
     <nav class="foot-col" aria-label="Veltrix">
       <strong>Veltrix</strong>
@@ -13,11 +13,17 @@
       <a routerLink="/contato">Fale com a Veltrix</a>
       <a [routerLink]="auth.areaClienteLink()">Área do cliente</a>
     </nav>
+    <nav class="foot-col" aria-label="Legal">
+      <strong>Legal</strong>
+      <a routerLink="/privacidade">Política de Privacidade</a>
+      <a routerLink="/termos">Termos de Uso</a>
+      <a href="mailto:[privacidade@veltrix.com.br]">Encarregado de dados (LGPD)</a>
+    </nav>
     <div class="foot-col foot-about">
       <strong class="foot-slogan">Inteligência Operacional Integrada</strong>
-      <p>Um login por pessoa, uma fatura por organização e acesso auditado em cada módulo.</p>
+      <p>Sistemas de gestão integrados para empresas e órgãos públicos — um login por pessoa, uma fatura por organização e acesso auditado em cada módulo.</p>
     </div>
   </div>
-  <!-- TODO: CNPJ, endereço e links de Privacidade/Termos quando existirem. -->
-  <p class="foot-copy">© {{ year }} Veltrix</p>
+  <!-- LGPD: se for adicionado analytics, pixel ou chat de terceiro, incluir banner de consentimento com opção de recusar e atualizar a seção "Cookies" de /privacidade. -->
+  <p class="foot-copy">© {{ year }} Veltrix <span class="foot-cnpj">[RAZÃO SOCIAL] · CNPJ [00.000.000/0001-00] · [cidade/UF]</span></p>
 </footer>

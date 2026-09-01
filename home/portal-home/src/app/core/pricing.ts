@@ -28,9 +28,9 @@ export interface Product {
 }
 
 export const PRODUCTS: Product[] = [
-  { key: 'RELATORIOS', name: 'Relatórios', status: 'SOON', currency: 'BRL', tagline: '', description: 'Painéis e indicadores consolidados dos módulos contratados, com exportação e visões por período.', benefits: [], tiers: [] },
-  { key: 'ATENDIMENTO', name: 'Atendimento', status: 'SOON', currency: 'BRL', tagline: '', description: 'Central de chamados e solicitações internas com fluxos configuráveis e histórico por solicitante.', benefits: [], tiers: [] },
-  { key: 'CADASTROS', name: 'Cadastros', status: 'SOON', currency: 'BRL', tagline: '', description: 'Base central de pessoas, organizações e contextos reaproveitada por todos os módulos da plataforma.', benefits: [], tiers: [] },
+  { key: 'RELATORIOS', name: 'Relatórios', status: 'SOON', currency: 'BRL', tagline: '', description: 'Painéis e indicadores consolidados de todos os módulos contratados: volume, prazos, gargalos e comparativos por período, com exportação para quem precisa prestar contas.', benefits: [], tiers: [] },
+  { key: 'ATENDIMENTO', name: 'Atendimento', status: 'SOON', currency: 'BRL', tagline: '', description: 'Central de chamados e solicitações, internas ou do público, com protocolo, fluxos configuráveis, prazos e histórico completo. Nada se perde no e-mail.', benefits: [], tiers: [] },
+  { key: 'CADASTROS', name: 'Cadastros', status: 'SOON', currency: 'BRL', tagline: '', description: 'Cadastro único de pessoas, organizações e unidades, compartilhado por todos os módulos. Atualizou uma vez, valeu para a plataforma inteira.', benefits: [], tiers: [] },
 ];
 
 export function findProduct(key: string | null): Product | undefined {

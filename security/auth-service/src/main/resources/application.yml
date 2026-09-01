@@ -82,6 +82,9 @@ auth:
   bootstrap:
     enabled: ${AUTH_BOOTSTRAP_ENABLED:false}
     email: ${AUTH_BOOTSTRAP_EMAIL:}
+    # Em produção a senha NÃO chega por env var: o Docker secret auth_bootstrap_password
+    # (configtree, target auth.bootstrap.password) sobrepõe este placeholder — o compose
+    # não repassa AUTH_BOOTSTRAP_PASSWORD. A env var fica só como caminho de dev local.
     password: ${AUTH_BOOTSTRAP_PASSWORD:}
     name: ${AUTH_BOOTSTRAP_NAME:Administrador}
 

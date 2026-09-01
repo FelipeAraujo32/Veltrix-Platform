@@ -91,7 +91,7 @@ footer {
   color: #b7c0e0; background: var(--grad-ink);
   border-top: 1px solid rgba(58, 111, 216, .2);
 }
-.foot-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2rem; }
+.foot-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2rem; }
 .foot-col { display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
 .foot-col strong { color: #fff; font-family: var(--font-display); margin-bottom: .2rem; }
 .foot-col a { color: #b7c0e0; text-decoration: none; }
@@ -100,6 +100,11 @@ footer {
 .foot-copy {
   margin: 2rem 0 0; padding-top: 1.25rem; border-top: 1px solid rgba(255, 255, 255, .08);
   font-size: .85rem; color: #8f9abb;
+  display: flex; flex-wrap: wrap; gap: .3rem 1rem;
+}
+
+@media (max-width: 1000px) {
+  .foot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {

@@ -2,18 +2,115 @@
 
 /* ============================ Hero ============================ */
 .hero { position: relative; overflow: hidden; color: #fff; background: var(--grad-ink); }
+/* luzes simétricas em volta do centro: âmbar por trás do título, azul na base */
 .hero-glow {
   position: absolute; inset: 0; pointer-events: none;
   background:
-    radial-gradient(620px 420px at 90% 6%, rgba(233, 162, 59, .20), transparent 58%),
-    radial-gradient(680px 500px at 4% 98%, rgba(35, 71, 143, .55), transparent 60%);
+    radial-gradient(720px 440px at 50% -12%, rgba(233, 162, 59, .18), transparent 60%),
+    radial-gradient(900px 560px at 50% 115%, rgba(35, 71, 143, .55), transparent 62%);
 }
+/* ——— Esteira de produtos (decorativa, atrás do texto) ———
+   Sem screenshots reais: cada card é uma "mini-tela" desenhada com gradientes
+   (gráfico = Relatórios, fila de chamados = Atendimento, tabela = Cadastros). */
+.hero-carousel { position: absolute; inset: 0; pointer-events: none; }
+.carousel-tilt {
+  position: absolute; inset: 0;
+  display: grid; align-content: center; gap: 1.4rem;
+  transform: rotate(-4deg) scale(1.12);
+}
+.carousel-row { display: flex; width: max-content; will-change: transform; animation: hero-marquee 75s linear infinite; }
+.carousel-row-reverse { animation-direction: reverse; animation-duration: 95s; margin-left: -130px; }
+/* -50% = exatamente uma metade; o margin-right fixo (sem gap) mantém o passo constante */
+@keyframes hero-marquee { to { transform: translateX(-50%); } }
+
+.mini-card {
+  flex: none; width: 240px; margin-right: 18px;
+  padding: .8rem .85rem .85rem; border-radius: 14px;
+  background: rgba(255, 255, 255, .05);
+  border: 1px solid rgba(174, 191, 230, .15);
+  box-shadow: 0 18px 40px -22px rgba(0, 0, 0, .55);
+}
+.mini-head { display: flex; align-items: center; gap: .55rem; }
+.mini-ic {
+  display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px;
+  background: rgba(58, 111, 216, .28); color: #cfe0ff;
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+}
+.mini-name {
+  font-family: var(--font-mono); font-size: .64rem; font-weight: 600;
+  letter-spacing: .13em; text-transform: uppercase; color: #aebfe6;
+}
+.mini-ui {
+  height: 92px; margin-top: .75rem; border-radius: 9px;
+  background-color: rgba(16, 21, 31, .38); background-repeat: no-repeat;
+}
+/* Relatórios: linha de título + barras com uma coluna âmbar em destaque */
+.mini-ui-relatorios {
+  background-image:
+    linear-gradient(rgba(174, 191, 230, .30) 0 0),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(233, 162, 59, .85) 0 0),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0);
+  background-size: 42% 6px, 9% 30%, 9% 48%, 9% 64%, 9% 40%, 9% 56%, 9% 34%;
+  background-position: 8% 14%, 8% 100%, 23% 100%, 38% 100%, 53% 100%, 68% 100%, 83% 100%;
+}
+/* Atendimento: fila de chamados — status (bolinha), assunto e etiqueta à direita */
+.mini-ui-atendimento {
+  background-image:
+    radial-gradient(circle, rgba(233, 162, 59, .9) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(233, 162, 59, .55) 0 0),
+    radial-gradient(circle, rgba(174, 191, 230, .5) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .30) 0 0),
+    linear-gradient(rgba(174, 191, 230, .22) 0 0),
+    radial-gradient(circle, rgba(174, 191, 230, .5) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .30) 0 0),
+    linear-gradient(rgba(174, 191, 230, .22) 0 0);
+  background-size: 9px 9px, 46% 8px, 15% 8px, 9px 9px, 52% 8px, 12% 8px, 9px 9px, 40% 8px, 12% 8px;
+  background-position: 7% 16%, 24% 16%, 93% 16%, 7% 50%, 24% 50%, 93% 50%, 7% 84%, 24% 84%, 93% 84%;
+}
+/* Cadastros: cabeçalho de tabela + linhas com avatar e duas colunas */
+.mini-ui-cadastros {
+  background-image:
+    linear-gradient(rgba(174, 191, 230, .16) 0 0),
+    radial-gradient(circle, rgba(58, 111, 216, .75) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .22) 0 0),
+    radial-gradient(circle, rgba(233, 162, 59, .8) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .22) 0 0),
+    radial-gradient(circle, rgba(174, 191, 230, .5) 0 48%, transparent 52%),
+    linear-gradient(rgba(174, 191, 230, .34) 0 0),
+    linear-gradient(rgba(174, 191, 230, .22) 0 0);
+  background-size: 92% 9px, 9px 9px, 34% 7px, 20% 7px, 9px 9px, 34% 7px, 20% 7px, 9px 9px, 34% 7px, 20% 7px;
+  background-position: 50% 8%, 8% 32%, 26% 32%, 88% 32%, 8% 58%, 26% 58%, 88% 58%, 8% 84%, 26% 84%, 88% 84%;
+}
+/* Véu: escurece o centro (onde vive o texto) e esvai os cards nas bordas */
+.carousel-veil {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(58% 76% at 50% 46%, rgba(16, 21, 31, .95), rgba(16, 21, 31, .56) 58%, rgba(16, 21, 31, 0) 100%),
+    linear-gradient(180deg, rgba(16, 21, 31, .8), rgba(16, 21, 31, 0) 24% 76%, rgba(16, 21, 31, .8)),
+    linear-gradient(90deg, rgba(16, 21, 31, .7), rgba(16, 21, 31, 0) 18% 82%, rgba(16, 21, 31, .7));
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel-row { animation: none; }
+}
+
 .hero-grid {
   position: relative; z-index: 1;
-  min-height: 440px; display: grid; grid-template-columns: 1fr;
-  align-items: center; gap: clamp(2rem, 5vw, 4.5rem);
+  min-height: 500px; display: grid; place-items: center;
 }
-.hero-copy h1 { color: #fff; max-width: 16ch; margin: .7rem 0 0; }
+.hero-copy { display: flex; flex-direction: column; align-items: center; text-align: center; }
+/* halo escuro sob as letras: descola o texto da esteira em movimento */
+.hero-copy .eyebrow { text-shadow: 0 1px 2px rgba(11, 15, 24, .7), 0 3px 14px rgba(11, 15, 24, .9); }
+.hero-copy h1 {
+  color: #fff; max-width: 36ch; margin: .7rem 0 0; text-wrap: balance;
+  text-shadow: 0 1px 2px rgba(11, 15, 24, .55), 0 8px 32px rgba(11, 15, 24, .9);
+}
 /* realce âmbar (o "acesso") — marca-texto que acompanha a quebra de linha */
 /* a faixa termina em 82% para acompanhar a metade inferior das letras (o line-height do h1
    empurra a baseline para cima do fim da linha; 100% deixaria um bloco solto abaixo do texto) */
@@ -22,7 +119,11 @@
   -webkit-box-decoration-break: clone; box-decoration-break: clone;
   padding: 0 .04em;
 }
-.hero-copy .lead { color: #c4cce4; margin-top: 1.15rem; }
+.hero-copy .lead {
+  color: #d2d9ec; margin-top: 1.15rem; max-width: 52ch; text-wrap: pretty;
+  text-shadow: 0 1px 2px rgba(11, 15, 24, .65), 0 5px 20px rgba(11, 15, 24, .85);
+}
+.hero-copy .actions { justify-content: center; }
 .hero .arrow { transition: transform .16s ease; }
 .hero .button:hover .arrow { transform: translateX(3px); }
 
@@ -71,7 +172,8 @@
 
 /* ============================ Responsivo ============================ */
 @media (max-width: 860px) {
-  .hero-grid { grid-template-columns: 1fr; padding-block: 3.5rem; }
+  .hero-grid { padding-block: 3.5rem; }
+  .hero-carousel { display: none; } // em tela estreita a esteira viraria ruído atrás do texto
   .equation { grid-template-columns: 1fr; }
   .op { justify-self: center; transform: rotate(90deg); margin: -.2rem 0; }
   .sec-grid { grid-template-columns: 1fr; }

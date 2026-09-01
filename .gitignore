@@ -8,6 +8,8 @@
 # Segredos — NUNCA versionar (os *.env.example com placeholders podem ser commitados)
 **/*.env
 !**/*.env.example
+# variantes locais de env — não casam com *.env
+.env.local
 *.pem
 **/*.pem
 *.key
@@ -30,3 +32,6 @@ secrets/
 
 # Config por máquina (nunca versionar)
 compose.override.yml
+
+# Ponte SSH temporária usada pelo Claude (saídas de diagnóstico)
+scripts/.vps/

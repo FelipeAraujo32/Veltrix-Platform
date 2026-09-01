@@ -141,7 +141,10 @@ services:
     logging: *default-logging
     depends_on:
       api-gateway: { condition: service_healthy }
-    networks: [veltrix]
+    # `veltrix-web` = nome interno que o NPM usa no Forward Hostname.
+    networks:
+      veltrix:
+        aliases: [veltrix-web]
     # Loopback: acesso público só via proxy reverso (que usa a rede Docker).
     ports:
       - "127.0.0.1:4200:8080"

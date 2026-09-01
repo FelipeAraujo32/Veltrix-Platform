@@ -27,3 +27,6 @@ secrets/
 # IDE
 .idea/
 *.iml
+
+# Config por máquina (nunca versionar)
+compose.override.yml

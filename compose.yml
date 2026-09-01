@@ -28,6 +28,14 @@
 # PORTAS: gateway (8080) e portal (4200) publicados SÓ no loopback — o público
 # entra pelo proxy reverso (Nginx Proxy Manager/edge TLS) nas portas 80/443,
 # que alcança o portal pela rede Docker (portal-home:8080).
+# Nome fixo do projeto: rede/volume viram veltrix-platform_* independente do
+# nome da pasta no host (mantém válido o `docker network connect` documentado).
+name: veltrix-platform
+
+# Rotação de log dos containers (evita disco cheio no servidor).
+x-logging: &default-logging
+  driver: json-file
+  options: { max-size: "10m", max-file: "3" }
 
 networks:
   veltrix:
@@ -56,6 +64,10 @@ services:
     # sob pressão, chaves de lockout/rate-limit podem ser evictadas — coerente com o
     # fail-open declarado dessas features (nunca trava login por falta de memória).
     command: ["redis-server", "--appendonly", "yes", "--maxmemory", "200mb", "--maxmemory-policy", "allkeys-lru"]
+    container_name: veltrix-redis
+    restart: unless-stopped
+    logging: *default-logging
+    command: ["redis-server", "--appendonly", "yes"]
     networks: [veltrix]
     volumes: ["redis-data:/data"]
     deploy:
@@ -72,6 +84,9 @@ services:
   # ---------------------------------------------------------------- auth (emissor JWT)
   auth-service:
     build: { context: ., dockerfile: security/auth-service/Dockerfile }
+    container_name: veltrix-auth-service
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       redis: { condition: service_healthy }
     networks: [veltrix]
@@ -134,6 +149,9 @@ services:
   # ---------------------------------------------------------------- gateway
   api-gateway:
     build: { context: ., dockerfile: security/api-gateway/Dockerfile }
+    container_name: veltrix-api-gateway
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       auth-service: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -180,12 +198,18 @@ services:
       args:
         APP_NAME: portal-home
     image: veltrix/portal-home:local
+    container_name: veltrix-portal-home
+    restart: unless-stopped
+    logging: *default-logging
     depends_on:
       api-gateway: { condition: service_healthy }
     networks:
       veltrix:
         # Nome estável que o NPM usa no proxy host (veltrix-web:8080) — o forward
         # é sempre por NOME na rede Docker, nunca por IP (IP só na Cloudflare).
+    # `veltrix-web` = nome interno que o NPM usa no Forward Hostname.
+    networks:
+      veltrix:
         aliases: [veltrix-web]
     # Loopback: acesso público só via proxy reverso (que usa a rede Docker).
     ports:

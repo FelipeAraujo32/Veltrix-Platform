@@ -11,8 +11,8 @@ class ProdSecretsGuardTest {
 
     private MockEnvironment complete() {
         return new MockEnvironment()
-                .withProperty("spring.datasource.url", "jdbc:sqlserver://db:1433;databaseName=veltrix_auth")
-                .withProperty("spring.datasource.username", "sa")
+                .withProperty("spring.datasource.url", "jdbc:sqlserver://db:1433;databaseName=veltrix_platform")
+                .withProperty("spring.datasource.username", "veltrix")
                 .withProperty("spring.datasource.password", "s3cr3t")
                 .withProperty("jwt.private-key-path", "/run/secrets/veltrix-jwt-private.pem")
                 .withProperty("jwt.key-id", "veltrix-2026-01")

@@ -8,6 +8,6 @@
     <p class="prod-plans">{{product().tiers.length}} planos · escolha o que cabe na sua operação</p>
     <div class="actions"><a class="button" [routerLink]="['/produtos', product().key.toLowerCase()]">Ver planos e preços<span aria-hidden="true">→</span></a></div>
   } @else {
-    <span class="prod-note">Em desenvolvimento</span>
+    <a class="prod-note" routerLink="/contato">Em desenvolvimento · quero ser avisado</a>
   }
 </article>

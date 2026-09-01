@@ -1,0 +1,21 @@
+:host { display: block; }
+
+.legal { padding-block: 3.2rem 4.5rem; }
+.legal > * { max-width: 72ch; }
+
+.legal h1 { margin: .6rem 0 0; }
+.legal-updated { margin: 1.1rem 0 0; font-size: .85rem; color: var(--muted); }
+
+.legal-sumario { margin-top: 2.2rem; }
+.legal-sumario-titulo {
+  font-family: var(--font-mono); font-weight: 600; font-size: .74rem;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--ink-soft);
+}
+.legal-sumario ol { margin: .8rem 0 0; padding-left: 1.5rem; display: grid; gap: .45rem; }
+.legal-sumario li::marker { font-family: var(--font-mono); font-size: .85rem; color: var(--muted); }
+.legal-sumario a { text-decoration: none; font-weight: 500; }
+.legal-sumario a:hover { text-decoration: underline; }
+
+.legal h2 { margin: 2.8rem 0 .7rem; scroll-margin-top: 96px; }
+.legal h3 { margin: 1.7rem 0 .45rem; }
+.legal p { margin: 0 0 1rem; color: var(--muted); }

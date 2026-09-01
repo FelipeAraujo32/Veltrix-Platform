@@ -1,0 +1,49 @@
+@if (product(); as p) {
+  <section class="hero prod-hero">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="page">
+      <a class="back-link light" routerLink="/produtos">← Todos os produtos</a>
+      <span class="eyebrow eyebrow-light">Produto</span>
+      <h1>{{p.name}}</h1>
+      <p class="lead">{{p.tagline}}</p>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="benefits-band">
+      <span class="eyebrow">Por que assinar</span>
+      <h2>O que você ganha com o {{p.name}}</h2>
+      <ul class="benefit-list">
+        @for (benefit of p.benefits; track benefit) { <li><span class="b-ic" aria-hidden="true">✓</span><span>{{benefit}}</span></li> }
+      </ul>
+    </div>
+  </section>
+
+  <section class="page plans">
+    <div class="plans-head">
+      <div><span class="eyebrow">Planos</span><h2>Escolha o plano ideal</h2></div>
+      <div class="cycle-toggle" role="group" aria-label="Ciclo de cobrança">
+        <button type="button" [class.on]="cycle()==='MONTHLY'" [attr.aria-pressed]="cycle()==='MONTHLY'" (click)="setCycle('MONTHLY')">Mensal</button>
+        <button type="button" [class.on]="cycle()==='YEARLY'" [attr.aria-pressed]="cycle()==='YEARLY'" (click)="setCycle('YEARLY')">Anual <span class="save">2 meses grátis</span></button>
+      </div>
+    </div>
+
+    <div class="tier-grid">
+      @for (tier of p.tiers; track tier.code) {
+        <article class="card tier-card" [class.featured]="tier.highlight">
+          @if (tier.highlight) { <span class="ribbon">Mais popular</span> }
+          <h3>{{tier.name}}</h3>
+          <p class="tier-tagline">{{tier.tagline}}</p>
+          <div class="price-amount"><strong>{{brl(price(tier))}}</strong><span>/mês</span></div>
+          <p class="price-note">{{cycle()==='YEARLY' ? 'cobrado anualmente (' + brl(total(tier)) + '/ano)' : 'cobrado mensalmente'}}</p>
+          <a class="button" [class.button-accent]="tier.highlight" routerLink="/contato" [queryParams]="{produto:p.key, plano:tier.code}">Falar sobre o {{tier.name}} <span aria-hidden="true">→</span></a>
+          <ul class="tier-feats">
+            @for (feature of tier.features; track feature) { <li>{{feature}}</li> }
+          </ul>
+        </article>
+      }
+    </div>
+
+    <p class="already-line">Já é cliente? <a [routerLink]="auth.areaClienteLink()">Entrar na Área do cliente</a></p>
+  </section>
+}

@@ -1,0 +1,12 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Auth Service",
+            "request": "launch",
+            "mainClass": "br.com.veltrix.auth.AuthServiceApplication",
+            "projectName": "auth-service"
+        }
+    ]
+}

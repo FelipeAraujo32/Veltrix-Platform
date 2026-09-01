@@ -1,0 +1,20 @@
+# ==============================================================================
+# Perfil `prod` (fail-closed) — deploy via compose.yml raiz.
+# O gateway não possui segredos próprios hoje; o import configtree fica pronto
+# para futuros secrets. Properties críticas abaixo perdem qualquer fallback de
+# localhost: sem env var, o serviço NÃO sobe (placeholder não resolvível).
+# As URIs das rotas (spring.cloud.gateway) permanecem no application.yml e são
+# sempre fornecidas pelo compose — nenhum módulo é hardcoded em código Java.
+# ==============================================================================
+spring:
+  config:
+    import:
+      - optional:configtree:/run/secrets/
+  data:
+    redis:
+      url: ${GATEWAY_REDIS_URL}
+
+
+veltrix:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS}

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>br.com.veltrix</groupId>
+    <artifactId>veltrix-backend</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <modules>
+        <module>security/shared-security</module>
+        <module>security/auth-service</module>
+        <module>security/api-gateway</module>
+    </modules>
+
+    <properties>
+        <!-- MANTER EM SYNC com env JACOCO_VERSION em .github/workflows/ci.yml (job backend). -->
+        <jacoco.version>0.8.13</jacoco.version>
+    </properties>
+
+    <build>
+        <!--
+          JaCoCo (somente relatório: prepare-agent + report). Sem gate de % ainda,
+          para não quebrar o build agora (o gate entra numa onda posterior).
+
+          ATENÇÃO / DÍVIDA CONHECIDA: este pom é apenas AGREGADOR. Cada módulo em
+          <modules> herda de spring-boot-starter-parent (não deste pom), então a
+          config abaixo NÃO se propaga por herança para os módulos. Ela fica aqui
+          por dois motivos: (1) documentar a versão/goals padrão do JaCoCo do
+          projeto; (2) servir de base quando os módulos passarem a herdar deste
+          reator (follow-up). Enquanto isso, o CI dispara os goals do JaCoCo via
+          linha de comando (ver .github/workflows/ci.yml, job "backend"), o que
+          instrumenta e gera relatório em TODOS os módulos sem editar 6 poms.
+          FOLLOW-UP: tornar este pom o <parent> dos módulos para herança real.
+        -->
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>${jacoco.version}</version>
+                    <executions>
+                        <execution>
+                            <id>jacoco-prepare-agent</id>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>jacoco-report</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+</project>

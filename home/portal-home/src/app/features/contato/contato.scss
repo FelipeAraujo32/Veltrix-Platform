@@ -1,0 +1,15 @@
+.contato { padding-block: 3.2rem 4rem; }
+.interesse { margin-top: .4rem; }
+
+.contato-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.1rem; margin-top: 1.8rem;
+}
+.contato-grid .card { display: flex; flex-direction: column; align-items: flex-start; gap: .55rem; }
+.contato-grid .button { margin-top: auto; }
+
+.contato-list { list-style: none; margin: 0; padding: 0; display: grid; gap: .55rem; }
+.contato-list li { display: flex; gap: .55rem; align-items: baseline; }
+.contato-list span { color: var(--ok, #2f9e6e); font-weight: 700; }
+
+.contato-voltar { margin-top: 2.2rem; }

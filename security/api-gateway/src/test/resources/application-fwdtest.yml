@@ -1,0 +1,20 @@
+# Isolated route table for ForwardedHeadersRelayTest: replaces the production routes wholesale so a
+# single probe route (-> JDK HttpServer stub) exercises the gateway's forwarded-header strip/relay.
+spring:
+  cloud:
+    gateway:
+      server:
+        webflux:
+          # trusted-proxies excludes loopback on purpose: the WebTestClient (127.0.0.1) is untrusted,
+          # so the gateway must strip client-supplied X-Forwarded-* / Forwarded before proxying.
+          trusted-proxies: '203\.0\.113\.7'
+          routes:
+            - id: probe
+              uri: ${PROBE_STUB_URI}
+              predicates:
+                - Path=/api/v1/auth/probe
+
+veltrix:
+  gateway:
+    public-paths:
+      - /api/v1/auth/**

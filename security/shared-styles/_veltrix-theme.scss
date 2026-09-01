@@ -1,0 +1,246 @@
+// ============================================================================
+//  VELTRIX · Design System — "Quadro de Acesso" (Access Board)
+//  Tese: Acesso = Identidade × Entitlement. A interface fala como um PAINEL:
+//  rótulos e dados em mono (leitura de instrumento), controle técnico frio
+//  (grafite + cobalto) e UM sinal quente (âmbar) reservado a "no ar / seu".
+//  Fontes auto-hospedadas (CSP font-src 'self'). Fonte da verdade visual.
+// ============================================================================
+
+// — Fontes (auto-hospedadas em /fonts, servidas same-origin) ————————————————
+// Display: Space Grotesk (grotesca de engenharia) — títulos.
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/space-grotesk-500.woff2") format("woff2"); }
+@font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: swap; src: url("/fonts/space-grotesk-700.woff2") format("woff2"); }
+// Corpo: IBM Plex Sans (homem × máquina) — texto.
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("/fonts/plex-sans-400.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/plex-sans-500.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/plex-sans-600.woff2") format("woff2"); }
+// Dados/rótulos: IBM Plex Mono — readout do painel.
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("/fonts/plex-mono-500.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap; src: url("/fonts/plex-mono-600.woff2") format("woff2"); }
+
+:root {
+  color-scheme: light;
+
+  // — Tinta / neutros (frio, institucional) —————————————————
+  --ink: #141a26;          // grafite — texto e painéis escuros (~15:1 no canvas)
+  --ink-soft: #2b3547;     // títulos secundários
+  --muted: #586074;        // apoio (AA ~5.6:1 no branco)
+  --surface: #ffffff;      // cartões
+  --surface-2: #f4f6fa;    // cartões alternados
+  --canvas: #ebeef3;       // papel-blueprint frio (cartões brancos "levantam")
+
+  // — Cobalto (marca — 30%) ————————————————————————————————
+  --primary: #23478f;      // cobalto institucional (texto branco ~10:1)
+  --primary-dark: #182f5e; // prussiano (gradiente / hover)
+  --primary-600: #23478f;
+  --primary-bright: #3a6fd8;// interativo / links no claro (AA ~5:1)
+  --primary-100: #dbe4f6;  // tint
+  --primary-050: #eef2fb;  // tint muito claro
+  --violet: #2f4f97;       // parceiro frio no gradiente da marca
+
+  // — Âmbar (SINAL — 10% — "no ar / concedido / seu") ——————————
+  --signal: #e9a23b;       // âmbar-sinal (a luz do painel)
+  --signal-strong: #d78a1c;// âmbar forte (hover)
+  --signal-soft: #f8e7c6;  // tint p/ fundo de tile "vivo"
+  --signal-ink: #8a5a12;   // âmbar quando vira TEXTO no claro (AA ~6.5:1)
+
+  // — Semânticos ————————————————————————————————————————
+  --line: #d7dce7;         // bordas
+  --line-strong: #bcc4d6;
+  --danger: #c7443b;   --danger-050: #fdf1f0;   --danger-ink: #97281f;
+  --success: #2e8b6f;  --success-050: #eaf6f1;  --success-ink: #1c5c49;
+  --warning: #a66a12;  --warning-050: #fdf5e8;
+  --focus: #3a6fd8;        // anel de foco (cobalto claro)
+
+  // — Forma & elevação ——————————————————————————————————
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgba(20, 26, 38, .05), 0 6px 16px -8px rgba(20, 26, 38, .12);
+  --shadow-md: 0 14px 36px -16px rgba(24, 47, 94, .30);
+  --shadow-lg: 0 40px 80px -30px rgba(16, 21, 31, .45);
+  --ring: 0 0 0 4px rgba(58, 111, 216, .22);
+
+  // — Gradientes ————————————————————————————————————————
+  --grad-brand: linear-gradient(135deg, #2b56a8 0%, #23478f 50%, #182f5e 100%);
+  --grad-signal: linear-gradient(135deg, #f2b657 0%, #e9a23b 55%, #d78a1c 100%);
+  --grad-ink: linear-gradient(158deg, #10151f 0%, #16203a 55%, #1d2c50 100%);
+
+  // — Fontes ————————————————————————————————————————————
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "Cascadia Code", "Segoe UI Mono", monospace;
+
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.55;
+  font-family: var(--font-sans);
+  background:
+    // grade-blueprint sutil (o "painel"): linhas técnicas quase imperceptíveis
+    linear-gradient(rgba(35, 71, 143, .035) 1px, transparent 1px) 0 0 / 100% 28px,
+    radial-gradient(1100px 560px at 100% -10%, rgba(35, 71, 143, .06), transparent 60%),
+    radial-gradient(900px 480px at -10% 8%, rgba(233, 162, 59, .05), transparent 55%),
+    var(--canvas);
+  background-attachment: fixed;
+}
+
+button, input, textarea, select { font: inherit; }
+button, a { -webkit-tap-highlight-color: transparent; }
+a { color: var(--primary-bright); text-underline-offset: 2px; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; border-radius: 4px; }
+
+.skip-link {
+  position: fixed; z-index: 100; top: .5rem; left: .5rem;
+  transform: translateY(-160%);
+  padding: .75rem 1rem; background: #fff; color: var(--ink);
+  border-radius: 8px; box-shadow: var(--shadow-md); font-weight: 700;
+  transition: transform .18s ease;
+}
+.skip-link:focus { transform: none; }
+
+// — Layout ————————————————————————————————————————————————
+.page { width: min(1160px, 92vw); margin: 0 auto; padding: clamp(2.5rem, 5vw, 4.5rem) 0 clamp(3rem, 6vw, 5rem); }
+.page-narrow { width: min(760px, 92vw); }
+
+// — Tipografia ————————————————————————————————————————————
+// Eyebrow = RÓTULO DE PAINEL: mono, caixa-alta, com uma "luz" âmbar antes.
+.eyebrow {
+  display: inline-flex; align-items: center; gap: .6rem;
+  font-family: var(--font-mono); font-weight: 600;
+  color: var(--primary); letter-spacing: .18em; text-transform: uppercase; font-size: .72rem;
+}
+.eyebrow::before {
+  content: ""; width: 8px; height: 8px; border-radius: 2px; flex: none;
+  background: var(--signal); box-shadow: 0 0 0 3px rgba(233, 162, 59, .18);
+}
+.eyebrow-light { color: #aebfe6; } // sobre fundo escuro (a luz âmbar permanece)
+
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.06; margin-top: 0; letter-spacing: -.02em; color: var(--ink); }
+h1 { font-size: clamp(2.3rem, 5.6vw, 4rem); font-weight: 700; }
+h2 { font-size: clamp(1.55rem, 3vw, 2.35rem); font-weight: 700; }
+h3 { font-size: 1.16rem; font-weight: 600; }
+p.lead { color: var(--muted); font-size: 1.14rem; max-width: 60ch; }
+.gradient-text { background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+// Dado/leitura de instrumento (protocolo, preço, código) — use em números.
+.readout { font-family: var(--font-mono); font-weight: 600; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+
+// — Cartões ————————————————————————————————————————————————
+.card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  box-shadow: var(--shadow-sm);
+}
+.card-hover { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; cursor: pointer; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-100); }
+
+// — Grid ——————————————————————————————————————————————————
+.grid { display: grid; gap: 1.25rem; }
+.grid-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+// Vitrine de produtos (cards do catálogo) — usada em /produtos e na home.
+.prod-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem; margin-top: 2.5rem;
+}
+// Faixa "fale com a gente" (card horizontal) — usada em /produtos e na home.
+.prod-help { padding-top: 0; }
+.prod-help .card { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+.prod-help h2 { font-size: 1.4rem; }
+@media (max-width: 620px) {
+  .prod-help .card { flex-direction: column; align-items: flex-start; }
+}
+
+// — Formulários ————————————————————————————————————————————
+.field { display: flex; flex-direction: column; gap: .4rem; }
+.field label, fieldset legend { font-weight: 600; font-size: .92rem; color: var(--ink-soft); }
+.field small, .hint { color: var(--muted); }
+input, textarea, select {
+  width: 100%; border: 1.5px solid var(--line-strong);
+  border-radius: 10px; padding: .8rem .95rem;
+  color: var(--ink); background: #fff;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+input:hover, textarea:hover, select:hover { border-color: #a7b0c8; }
+input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary-bright); box-shadow: var(--ring); }
+textarea { min-height: 150px; resize: vertical; }
+input.ng-invalid.ng-touched, textarea.ng-invalid.ng-touched, select.ng-invalid.ng-touched { border-color: var(--danger); }
+.error-text { color: var(--danger-ink); margin: .25rem 0 0; font-size: .9rem; }
+
+// — Alertas ————————————————————————————————————————————————
+.alert { border-radius: 12px; padding: 1rem 1.1rem; margin: 1rem 0; border-left: 5px solid; font-weight: 500; }
+.alert-error { background: var(--danger-050); border-color: var(--danger); color: var(--danger-ink); }
+.alert-success { background: var(--success-050); border-color: var(--success); color: var(--success-ink); }
+
+// — Botões ————————————————————————————————————————————————
+.actions { display: flex; flex-wrap: wrap; gap: .75rem; align-items: center; margin-top: 1.5rem; }
+.button {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 46px; border: 1px solid transparent; border-radius: 10px;
+  padding: .74rem 1.3rem; background: var(--grad-brand);
+  color: #fff; font-family: var(--font-sans); font-weight: 600; text-decoration: none; cursor: pointer;
+  box-shadow: 0 12px 26px -14px rgba(24, 47, 94, .75);
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+.button:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -14px rgba(24, 47, 94, .8); }
+.button:active { transform: translateY(0); }
+.button:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(.2); }
+// A CHAVE: CTA âmbar (o "conceder acesso"). Texto tinta p/ contraste AA.
+.button-accent { background: var(--grad-signal); color: #241703; box-shadow: 0 12px 26px -14px rgba(233, 162, 59, .8); }
+.button-accent:hover { box-shadow: 0 18px 34px -14px rgba(233, 162, 59, .85); }
+.button-secondary { background: #fff; color: var(--ink); border-color: var(--line-strong); box-shadow: none; }
+.button-secondary:hover { background: var(--primary-050); border-color: var(--primary-100); box-shadow: none; }
+.button-danger { background: var(--danger); box-shadow: 0 12px 26px -14px rgba(199, 68, 59, .7); }
+.button-glass { background: rgba(255, 255, 255, .10); color: #fff; border-color: rgba(255, 255, 255, .30); box-shadow: none; backdrop-filter: blur(6px); }
+.button-glass:hover { background: rgba(255, 255, 255, .18); box-shadow: none; }
+.link-button { border: 0; background: transparent; color: var(--primary-bright); font: inherit; font-weight: 600; padding: .3rem; cursor: pointer; border-radius: 8px; }
+
+// — Badges / status (readout mono) —————————————————————————————
+.status {
+  display: inline-flex; align-items: center; gap: .45rem;
+  padding: .26rem .7rem; border-radius: var(--radius-pill);
+  font-family: var(--font-mono); font-size: .72rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  background: var(--primary-050); color: var(--primary-dark); border: 1px solid var(--primary-100);
+}
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+// "No ar / vivo" = âmbar-sinal
+.status-on { background: var(--signal-soft); color: var(--signal-ink); border-color: #eecfa0; }
+.status-trial { background: #fff7ed; color: #9a3412; border-color: #fed7aa; }
+.status-grace { background: var(--warning-050); color: var(--warning); border-color: #f0d9a8; }
+.status-soon { background: var(--surface-2); color: var(--muted); border-color: var(--line); }
+
+// — Utilitários ————————————————————————————————————————————
+.muted { color: var(--muted); }
+.loading { padding: 2.5rem; text-align: center; color: var(--muted); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+
+// — Tabelas ————————————————————————————————————————————————
+.table-wrap { overflow: auto; border-radius: var(--radius); border: 1px solid var(--line); }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { text-align: left; padding: .9rem 1rem; border-bottom: 1px solid var(--line); }
+thead th { background: var(--primary-050); color: var(--ink-soft); font-family: var(--font-mono); font-size: .74rem; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--surface-2); }
+
+// — Responsivo ————————————————————————————————————————————
+@media (max-width: 760px) {
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  h1 { font-size: 2.4rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; scroll-behavior: auto !important; animation: none !important; }
+}

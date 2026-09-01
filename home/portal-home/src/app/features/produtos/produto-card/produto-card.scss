@@ -1,0 +1,24 @@
+/* O host participa direto do grid do container (.prod-grid) — o article é o item. */
+:host { display: contents; }
+
+.prod-card { display: flex; flex-direction: column; gap: .55rem; overflow: hidden; }
+.prod-card::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 4px; background: var(--grad-brand); }
+.prod-card.soon::before { background: linear-gradient(90deg, var(--line-strong), var(--line)); }
+.prod-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .35rem; }
+.prod-ic {
+  width: 56px; height: 56px; border-radius: 16px; display: grid; place-items: center;
+  background: var(--grad-brand); color: #fff; font-size: 1.5rem; font-weight: 800;
+  box-shadow: 0 10px 24px -10px rgba(79, 70, 229, .7), inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+.soon .prod-ic { background: #eef0f7; color: var(--muted); box-shadow: inset 0 0 0 1px var(--line); }
+.prod-card h2 { margin: .6rem 0 0; font-size: 1.4rem; }
+.prod-desc { color: var(--muted); margin: 0; }
+.prod-price { display: flex; align-items: baseline; gap: .35rem; margin: .5rem 0 .2rem; }
+.prod-price .from { color: var(--muted); font-size: .82rem; font-weight: 600; }
+.prod-price strong { font-size: 1.85rem; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.prod-price .per { color: var(--muted); font-weight: 700; }
+.prod-plans { color: var(--muted); margin: 0; font-size: .9rem; flex: 1; }
+.prod-card .actions { margin-top: 1.25rem; }
+.prod-card .button span { transition: transform .16s ease; }
+.prod-card .button:hover span { transform: translateX(3px); }
+.prod-note { margin-top: auto; color: var(--muted); font-weight: 700; font-size: .85rem; letter-spacing: .02em; }

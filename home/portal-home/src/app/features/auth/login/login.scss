@@ -1,0 +1,58 @@
+:host { display: block; }
+
+.auth {
+  width: min(1080px, 92vw);
+  margin: clamp(2rem, 5vw, 4rem) auto 5rem;
+  display: grid; grid-template-columns: 1.02fr .98fr;
+  border-radius: 26px; overflow: hidden;
+  border: 1px solid var(--line); background: #fff;
+  box-shadow: var(--shadow-lg);
+}
+
+// — Painel de marca ————————————————————————————————————————
+.auth-aside {
+  position: relative; overflow: hidden;
+  padding: clamp(2rem, 4vw, 3rem);
+  color: #fff; background: var(--grad-ink);
+  display: flex; flex-direction: column; justify-content: space-between; gap: 2rem;
+}
+.auth-aside-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(440px 340px at 88% 8%, rgba(233, 162, 59, .22), transparent 60%),
+    radial-gradient(460px 380px at 6% 104%, rgba(35, 71, 143, .55), transparent 60%);
+}
+.auth-brand, .auth-aside-body { position: relative; z-index: 1; }
+.auth-brand { display: inline-flex; align-items: center; gap: .7rem; color: #fff; text-decoration: none; font-weight: 800; font-size: 1.15rem; }
+.auth-brand-mark {
+  display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px;
+  background: var(--grad-brand); font-weight: 800;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+.auth-aside h2 { color: #fff; font-size: clamp(1.6rem, 3vw, 2.3rem); margin-bottom: .85rem; line-height: 1.12; }
+.auth-aside p { color: #c4cce4; max-width: 44ch; }
+.eyebrow-light { color: #aebfe6; }
+
+.auth-points { list-style: none; margin: 1.6rem 0 0; padding: 0; display: grid; gap: .85rem; }
+.auth-points li { display: flex; align-items: center; gap: .7rem; color: #dbe1f2; font-weight: 500; }
+.auth-points span {
+  display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; flex: none;
+  background: rgba(233, 162, 59, .18); color: var(--signal); font-size: .8rem; font-weight: 800;
+}
+
+// — Painel do formulário ——————————————————————————————————
+.auth-form {
+  border: 0; border-radius: 0; box-shadow: none;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: clamp(2rem, 4vw, 3.2rem);
+}
+.auth-form h1 { font-size: clamp(1.9rem, 3.2vw, 2.6rem); margin-bottom: .6rem; }
+.auth-form .lead { font-size: 1.02rem; margin-top: 0; }
+.auth-form form { margin-top: 1.6rem; }
+
+@media (max-width: 860px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth-aside { order: 2; }
+}
+
+.auth-logo { display: block; width: min(240px, 62%); margin-bottom: .9rem; border-radius: 10px; }

@@ -1,0 +1,37 @@
+<section class="page contato">
+  <span class="eyebrow">Fale com a Veltrix</span>
+  <h1>Conte como é a sua operação. A gente monta o caminho.</h1>
+  <p class="lead">Sem formulário longo: nos mande um e-mail contando como é o seu atendimento hoje e respondemos com o conjunto de módulos ideal — preço por módulo, um login para a equipe e uma fatura para a organização.</p>
+
+  @if (interesse) {
+    <p class="interesse readout">Interesse registrado: {{ interesse }}</p>
+  }
+
+  <div class="contato-grid">
+    <article class="card">
+      <span class="eyebrow">Comercial</span>
+      <h2>E-mail</h2>
+      <p class="muted">Escreva para <strong>{{ email }}</strong> — o assunto já vai preenchido com o seu interesse.</p>
+      <a class="button button-accent" [href]="mailto">Enviar e-mail<span aria-hidden="true">→</span></a>
+    </article>
+
+    <article class="card">
+      <span class="eyebrow">O que nos contar</span>
+      <h2>Três coisas bastam</h2>
+      <ul class="contato-list">
+        <li><span>✓</span> Sua organização e quem ela atende</li>
+        <li><span>✓</span> Como o atendimento funciona hoje</li>
+        <li><span>✓</span> Tamanho da equipe que usaria a plataforma</li>
+      </ul>
+    </article>
+
+    <article class="card">
+      <span class="eyebrow">Já é cliente?</span>
+      <h2>Área do cliente</h2>
+      <p class="muted">Suporte e gestão da conta ficam dentro da plataforma, na sua área autenticada.</p>
+      <a class="button button-secondary" routerLink="/login">Entrar<span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+
+  <p class="contato-voltar"><a routerLink="/produtos">← Ver os produtos e preços</a></p>
+</section>

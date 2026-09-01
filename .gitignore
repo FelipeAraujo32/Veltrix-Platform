@@ -1,0 +1,29 @@
+# ------------------------------------------------------------------
+# Veltrix — .gitignore (raiz)
+# ------------------------------------------------------------------
+
+# Dev local: segredos gerados, scripts de subida, chaves, scratch
+.local/
+
+# Segredos — NUNCA versionar (os *.env.example com placeholders podem ser commitados)
+**/*.env
+!**/*.env.example
+*.pem
+**/*.pem
+*.key
+**/*.key
+secrets/
+**/secrets/
+
+# Configuração local do Claude Code (contém histórico de permissões, pode conter segredos)
+.claude/settings.local.json
+
+# Artefatos de build
+**/target/
+**/node_modules/
+**/dist/
+**/.angular/
+
+# IDE
+.idea/
+*.iml

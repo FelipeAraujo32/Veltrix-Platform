@@ -1,0 +1,21 @@
+<section class="page">
+  <span class="eyebrow">Produtos</span>
+  <h1>Sistemas que crescem com a sua operação.</h1>
+  <p class="lead">Cada módulo tem seu próprio preço e compartilha o mesmo acesso, identidade e cobrança central. Contrate só o que faz sentido hoje e adicione outros quando precisar.</p>
+
+  <div class="prod-grid">
+    @for (product of products; track product.key) {
+      <app-produto-card [product]="product" />
+    }
+  </div>
+</section>
+
+<section class="page prod-help">
+  <div class="card">
+    <div>
+      <h2>Não sabe por onde começar?</h2>
+      <p class="muted">A equipe da Veltrix ajuda a montar o conjunto de módulos ideal para a sua operação.</p>
+    </div>
+    <a class="button button-secondary" routerLink="/contato">Falar com a Veltrix</a>
+  </div>
+</section>

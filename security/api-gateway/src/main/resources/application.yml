@@ -1,0 +1,133 @@
+server:
+  port: ${GATEWAY_SERVER_PORT:8080}
+  # TLS terminates at the external LB/CDN. Forwarded-header handling here is delegated to Spring
+  # Cloud Gateway's own filters (see trusted-proxies below). Keep the framework strategy OFF at the
+  # gateway: ForwardedHeaderTransformer would rewrite the remote address with the client IP taken
+  # from X-Forwarded-For, defeating the trusted-proxies check and stripping X-Forwarded-* downstream.
+  forward-headers-strategy: none
+
+spring:
+  config:
+    import:
+      - optional:file:.env[.properties]
+  application:
+    name: veltrix-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-service
+              uri: ${AUTH_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: authService
+                    fallbackUri: forward:/fallback/service-unavailable
+            - id: auth-current-user
+              uri: ${AUTH_SERVICE_URI:http://localhost:8082}
+              predicates:
+                # /me/password: troca de senha autenticada por Bearer (fora do fluxo CSRF de /auth/*).
+                - Path=/api/v1/me,/api/v1/me/password
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: authService
+                    fallbackUri: forward:/fallback/service-unavailable
+            # Gestão de equipe da conta (plataforma, não gated por entitlement — ver platform-segments).
+            - id: auth-team
+              uri: ${AUTH_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/team/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: authService
+                    fallbackUri: forward:/fallback/service-unavailable
+            - id: auth-jwks
+              uri: ${AUTH_SERVICE_URI:http://localhost:8082}
+              predicates:
+                - Path=/.well-known/jwks.json
+          # Remote addresses allowed to send Forwarded/X-Forwarded-* (the external LB / nginx in
+          # front of the gateway). Spring Cloud Gateway 5 strips these headers before proxying
+          # unless trusted-proxies is set; with it, headers from any other source are still stripped
+          # (fail-closed), and only X-Forwarded-FOR is additionally IP-filtered against this regex —
+          # X-Forwarded-Host/Proto are NOT (host spoofing is handled by nginx stripping XFH; see
+          # home/portal-home/nginx/default.conf.template).
+          # WARNING: the default below trusts the ENTIRE loopback + RFC1918 space. In k8s/Docker that
+          # is the whole cluster/pod network, i.e. any compromised sidecar could forge X-Forwarded-*.
+          # GATEWAY_TRUSTED_PROXIES is a REQUIRED production override: set it to the narrow CIDR/regex
+          # of the LB/nginx hop only. The broad default exists solely for local/dev convenience.
+          trusted-proxies: '${GATEWAY_TRUSTED_PROXIES:127\.\d+\.\d+\.\d+|10\.\d+\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|192\.168\.\d+\.\d+|0:0:0:0:0:0:0:1|::1}'
+
+          httpclient:
+            connect-timeout: 2000
+            response-timeout: 5s
+
+jwt:
+  jwk-set-uri: ${JWT_JWK_SET_URI}
+  issuer: ${JWT_ISSUER}
+  audience: ${JWT_AUDIENCE}
+
+# DORMENTE: o módulo billing está fora do kernel por enquanto. Este bloco alimenta o
+# filtro de entitlement (EntitlementAuthorizationGlobalFilter), que hoje não age sobre
+# nenhuma rota (não há módulos de negócio plugados). Quando o billing voltar, basta o
+# compose fornecer BILLING_SERVICE_URI — nenhum código muda.
+billing:
+  service-uri: ${BILLING_SERVICE_URI:http://localhost:8084}
+  entitlement-cache-ttl: ${ENTITLEMENT_CACHE_TTL:30s}
+
+spring.data.redis.url: ${GATEWAY_REDIS_URL:redis://localhost:6379}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      authService:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+
+veltrix:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:4201}
+  gateway:
+    # HSTS emitted at the edge of our stack (TLS terminates at the external LB). Fail-safe:
+    # enabled by default; GATEWAY_HSTS_ENABLED=false is for local plain-HTTP debugging only
+    # and logs a startup warning.
+    hsts:
+      enabled: ${GATEWAY_HSTS_ENABLED:true}
+      value: "max-age=31536000; includeSubDomains"
+    rate-limit:
+      # Brute-force guard for POST /api/v1/auth/login (per client IP). Closes L4.
+      enabled: ${RATE_LIMIT_ENABLED:true}
+      login-limit: ${RATE_LIMIT_LOGIN_LIMIT:10}
+      login-window: ${RATE_LIMIT_LOGIN_WINDOW:1m}
+      # Looser default per-IP budget for everything else.
+      global-limit: ${RATE_LIMIT_GLOBAL_LIMIT:300}
+      global-window: ${RATE_LIMIT_GLOBAL_WINDOW:1m}
+      # OBRIGATÓRIO quando o gateway está atrás de LB/ingress: peers diretos confiáveis cuja
+      # X-Forwarded-For é honrada. Aceita IP exato ou CIDR (ex.: "10.0.0.0/8", subnet do Docker/LB).
+      # Vazio = confia em ninguém (fail-safe contra spoofing), mas atrás de LB TODOS os clientes
+      # colapsam no bucket do IP do LB (auto-DoS) — configure nessa topologia.
+      trusted-proxies: ${RATE_LIMIT_TRUSTED_PROXIES:}
+      # Paths isentos de rate-limit (Ant patterns; SÓ config, nunca código do gateway). Webhooks de
+      # pagamento chegam de poucos IPs do provedor (rajada de reentrega estouraria o bucket global)
+      # e têm autenticação própria fail-closed no serviço de destino.
+      exempt-paths: ${RATE_LIMIT_EXEMPT_PATHS:}
+    # Segments under /api/v1 that are platform/infra (NOT entitlement-gated business modules).
+    platform-segments: [auth, me, team]
+    # Ant patterns that bypass authentication entirely. A new module adds its own public endpoints here.
+    public-paths:
+      - /api/v1/auth/**
+      - /.well-known/jwks.json
+      - /actuator/health
+      - /actuator/info

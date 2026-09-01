@@ -1,0 +1,61 @@
+:host { display: block; }
+
+/* ---- Hero do produto ---- */
+.prod-hero { position: relative; overflow: hidden; color: #fff; background: var(--grad-ink); }
+.prod-hero .hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(520px 360px at 90% 8%, rgba(34, 211, 238, .20), transparent 58%),
+    radial-gradient(560px 400px at 4% 100%, rgba(124, 58, 237, .38), transparent 58%);
+}
+.prod-hero .page { position: relative; z-index: 1; padding-block: clamp(2rem, 5vw, 3.5rem); }
+.prod-hero h1 { color: #fff; margin: .6rem 0 0; }
+.prod-hero .lead { color: #cdd3f4; margin-top: .9rem; max-width: 60ch; }
+.back-link { display: inline-block; font-weight: 700; font-size: .9rem; text-decoration: none; margin-bottom: 1.2rem; }
+.back-link.light { color: #b6bef1; }
+.back-link.light:hover { color: #fff; }
+
+/* ---- Benefícios (por que assinar) ---- */
+.benefits-band h2 { margin: .5rem 0 1.2rem; }
+.benefit-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .9rem 2rem; }
+.benefit-list li { display: flex; align-items: flex-start; gap: .75rem; color: var(--ink-soft); font-size: 1.02rem; }
+.b-ic { flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; margin-top: 1px; background: var(--primary-050); color: var(--primary); font-size: .8rem; font-weight: 800; }
+
+/* ---- Planos ---- */
+.plans { padding-top: 0; }
+.plans-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.6rem; }
+.plans-head h2 { margin: .35rem 0 0; }
+
+.cycle-toggle { display: inline-flex; gap: .25rem; padding: .3rem; border: 1px solid var(--line); border-radius: 999px; background: #fff; box-shadow: var(--shadow-sm); }
+.cycle-toggle button { border: 0; background: transparent; color: var(--muted); font-weight: 700; cursor: pointer; padding: .55rem 1.1rem; border-radius: 999px; display: inline-flex; align-items: center; gap: .5rem; transition: background .16s ease, color .16s ease; }
+.cycle-toggle button.on { background: var(--grad-brand); color: #fff; box-shadow: 0 8px 18px -10px rgba(79, 70, 229, .7); }
+.cycle-toggle .save { font-size: .68rem; font-weight: 800; padding: .12rem .45rem; border-radius: 999px; background: var(--primary-050); color: var(--primary-dark); }
+.cycle-toggle button.on .save { background: rgba(255, 255, 255, .22); color: #fff; }
+
+.tier-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; align-items: start; }
+.tier-card { display: flex; flex-direction: column; gap: .35rem; overflow: visible; }
+.tier-card.featured { border-color: transparent; box-shadow: var(--shadow-lg); outline: 2px solid var(--primary); outline-offset: -1px; }
+.ribbon {
+  position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+  background: var(--grad-brand); color: #fff; font-size: .72rem; font-weight: 800;
+  padding: .3rem .85rem; border-radius: 999px; white-space: nowrap;
+  box-shadow: 0 10px 20px -8px rgba(79, 70, 229, .7);
+}
+.tier-card h3 { margin: .3rem 0 0; font-size: 1.35rem; }
+.tier-tagline { color: var(--muted); margin: 0; min-height: 2.6em; }
+.price-amount { display: flex; align-items: baseline; gap: .35rem; margin-top: .6rem; }
+.price-amount strong { font-size: 2.4rem; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.price-amount span { color: var(--muted); font-weight: 700; }
+.price-note { color: var(--muted); font-size: .84rem; margin: .1rem 0 1rem; min-height: 1.2em; }
+.tier-card .button { width: 100%; }
+.tier-feats { list-style: none; margin: 1.25rem 0 0; padding: 1.25rem 0 0; border-top: 1px solid var(--line); display: grid; gap: .6rem; }
+.tier-feats li { position: relative; padding-left: 1.6rem; color: var(--ink-soft); font-size: .92rem; }
+.tier-feats li::before { content: "✓"; position: absolute; left: 0; color: var(--primary); font-weight: 800; }
+
+.already-line { margin-top: 2rem; color: var(--muted); }
+.already-line a { font-weight: 700; }
+
+@media (max-width: 620px) {
+  .benefit-list { grid-template-columns: 1fr; }
+  .plans-head { align-items: stretch; }
+}

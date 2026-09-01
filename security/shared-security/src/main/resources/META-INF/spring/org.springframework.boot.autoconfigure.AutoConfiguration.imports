@@ -1,0 +1,3 @@
+br.com.veltrix.security.autoconfigure.VeltrixResourceServerAutoConfiguration
+br.com.veltrix.security.autoconfigure.VeltrixEntitlementClientAutoConfiguration
+br.com.veltrix.security.autoconfigure.VeltrixEntitlementAspectAutoConfiguration

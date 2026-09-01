@@ -1,0 +1,24 @@
+.app-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem; margin-top: 2.5rem;
+}
+.app-card { display: flex; flex-direction: column; gap: .5rem; overflow: hidden; }
+.app-card::before {
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 4px;
+  background: var(--grad-brand);
+}
+.app-card-top { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-top: .35rem; }
+.app-icon {
+  width: 58px; height: 58px; border-radius: 16px; display: grid; place-items: center;
+  background: var(--grad-brand); color: #fff; font-size: 1.6rem; font-weight: 800;
+  box-shadow: 0 10px 24px -10px rgba(79, 70, 229, .7), inset 0 0 0 1px rgba(255, 255, 255, .18);
+}
+.app-card h2 { margin: .7rem 0 0; font-size: 1.4rem; }
+.app-desc { color: var(--muted); margin: 0; flex: 1; }
+.app-card .warning {
+  color: var(--warning); background: var(--warning-050); border: 1px solid #fde68a;
+  padding: .7rem .9rem; border-radius: 10px; margin: .3rem 0 0; font-size: .9rem;
+}
+.app-card .button { margin-top: 1.25rem; align-self: flex-start; }
+.app-card .button span { transition: transform .16s ease; }
+.app-card .button:hover span { transform: translateX(3px); }

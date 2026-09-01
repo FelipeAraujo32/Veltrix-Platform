@@ -1,0 +1,1 @@
+{"extends":"../../tsconfig.json","compilerOptions":{"types":[]},"include":["src/**/*.ts","../../security/shared-client/src/**/*.ts"],"exclude":["src/**/*.spec.ts","../../security/shared-client/src/**/*.spec.ts"]}

@@ -1,0 +1,52 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "cli": {
+    "packageManager": "npm",
+    "analytics": false
+  },
+  "newProjectRoot": ".",
+  "projects": {
+    "portal-home": {
+      "projectType": "application",
+      "root": "home/portal-home",
+      "sourceRoot": "home/portal-home/src",
+      "prefix": "portal",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:application",
+          "options": {
+            "browser": "home/portal-home/src/main.ts",
+            "tsConfig": "home/portal-home/tsconfig.app.json",
+            "inlineStyleLanguage": "scss",
+            "assets": [{ "glob": "**/*", "input": "home/portal-home/public" }],
+            "styles": ["home/portal-home/src/styles.scss"]
+          },
+          "configurations": {
+            "production": { "budgets": [{ "type": "initial", "maximumWarning": "350kB", "maximumError": "700kB" }, { "type": "anyComponentStyle", "maximumWarning": "6kB", "maximumError": "8kB" }], "outputHashing": "all", "optimization": { "scripts": true, "styles": { "minify": true, "inlineCritical": false }, "fonts": true } },
+            "development": { "optimization": false, "extractLicenses": false, "sourceMap": true }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": { "builder": "@angular/build:dev-server", "options": { "port": 4200, "proxyConfig": "home/portal-home/proxy.conf.json" }, "configurations": { "development": { "buildTarget": "portal-home:build:development" }, "production": { "buildTarget": "portal-home:build:production" } }, "defaultConfiguration": "development" },
+        "test": { "builder": "@angular/build:unit-test", "options": { "tsConfig": "home/portal-home/tsconfig.spec.json" } }
+      }
+    },
+    "shared-client": {
+      "projectType": "library",
+      "root": "security/shared-client",
+      "sourceRoot": "security/shared-client/src",
+      "prefix": "veltrix",
+      "architect": {
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "buildTarget": "portal-home:build:development",
+            "tsConfig": "security/shared-client/tsconfig.spec.json",
+            "include": ["security/shared-client/src/**/*.spec.ts"]
+          }
+        }
+      }
+    }
+  }
+}

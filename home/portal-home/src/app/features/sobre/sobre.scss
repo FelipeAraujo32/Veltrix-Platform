@@ -1,0 +1,45 @@
+:host { display: block; }
+
+.hero {
+  position: relative; overflow: hidden; color: #fff;
+  background: var(--grad-ink);
+}
+.hero-compact .page { padding-block: clamp(2.5rem, 6vw, 4.5rem); }
+.hero-glow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(560px 380px at 90% 10%, rgba(34, 211, 238, .20), transparent 58%),
+    radial-gradient(600px 420px at 4% 100%, rgba(124, 58, 237, .38), transparent 58%);
+}
+.hero .page { position: relative; z-index: 1; }
+.hero h1 { color: #fff; max-width: 20ch; margin: .6rem 0 0; }
+.hero .lead { color: #cdd3f4; margin-top: 1.1rem; max-width: 68ch; }
+
+/* ---- Sobre ---- */
+.about { align-items: start; margin-top: 1rem; }
+.about h2 { margin-bottom: .6rem; }
+.about p { color: var(--muted); margin: 0 0 1rem; max-width: 60ch; }
+
+.facts h3 { margin: 0 0 .8rem; }
+.facts dl { margin: 0; display: grid; gap: .2rem; }
+.facts dl > div { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem 0; border-bottom: 1px solid var(--line); }
+.facts dl > div:last-child { border-bottom: 0; }
+.facts dt { color: var(--muted); margin: 0; }
+.facts dd { margin: 0; font-weight: 700; text-align: right; }
+
+/* ---- Como funciona ---- */
+.how-title { margin: 3rem 0 1.2rem; }
+.how b { color: var(--primary); font-size: 2rem; font-weight: 800; }
+.how h3 { margin: .7rem 0 .4rem; }
+.how p { color: var(--muted); margin: 0; }
+
+/* ---- CTA ---- */
+.cta-band {
+  position: relative; overflow: hidden; color: #fff;
+  background:
+    radial-gradient(600px 300px at 90% 30%, rgba(34, 211, 238, .18), transparent 60%),
+    var(--grad-brand);
+}
+.cta-inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; flex-wrap: wrap; padding-top: 3rem; padding-bottom: 3rem; }
+.cta-inner h2 { color: #fff; }
+.cta-inner p { color: #e6e8ff; margin: .4rem 0 0; }

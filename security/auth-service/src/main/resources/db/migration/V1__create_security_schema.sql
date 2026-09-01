@@ -1,0 +1,7 @@
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'security') EXEC('CREATE SCHEMA security');
+CREATE TABLE security.users (id BIGINT IDENTITY PRIMARY KEY, email NVARCHAR(255) NOT NULL UNIQUE, password_hash NVARCHAR(255) NOT NULL, name NVARCHAR(120) NOT NULL, status NVARCHAR(20) NOT NULL DEFAULT 'ACTIVE');
+CREATE TABLE security.roles (id BIGINT IDENTITY PRIMARY KEY, name NVARCHAR(80) NOT NULL UNIQUE);
+CREATE TABLE security.permissions (id BIGINT IDENTITY PRIMARY KEY, name NVARCHAR(120) NOT NULL UNIQUE);
+CREATE TABLE security.user_roles (user_id BIGINT NOT NULL, role_id BIGINT NOT NULL, CONSTRAINT pk_user_roles PRIMARY KEY(user_id,role_id), CONSTRAINT fk_ur_user FOREIGN KEY(user_id) REFERENCES security.users(id), CONSTRAINT fk_ur_role FOREIGN KEY(role_id) REFERENCES security.roles(id));
+CREATE TABLE security.role_permissions (role_id BIGINT NOT NULL, permission_id BIGINT NOT NULL, CONSTRAINT pk_role_permissions PRIMARY KEY(role_id,permission_id), CONSTRAINT fk_rp_role FOREIGN KEY(role_id) REFERENCES security.roles(id), CONSTRAINT fk_rp_permission FOREIGN KEY(permission_id) REFERENCES security.permissions(id));
+CREATE TABLE security.refresh_tokens (id BIGINT IDENTITY PRIMARY KEY, token_hash NVARCHAR(64) NOT NULL UNIQUE, user_id BIGINT NOT NULL, expires_at DATETIME2 NOT NULL, revoked_at DATETIME2 NULL, CONSTRAINT fk_refresh_user FOREIGN KEY(user_id) REFERENCES security.users(id));

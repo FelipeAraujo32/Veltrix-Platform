@@ -1,0 +1,13 @@
+<article class="card prod-card" [class.soon]="product().status==='SOON'">
+  <header class="prod-top"><div class="prod-ic">{{product().name.charAt(0)}}</div><span class="status" [class.status-grace]="product().status==='SOON'">{{product().status==='SOON' ? 'Em breve' : 'Disponível'}}</span></header>
+  <h2>{{product().name}}</h2>
+  <p class="prod-desc">{{product().description}}</p>
+
+  @if (product().status==='AVAILABLE') {
+    <div class="prod-price"><span class="from">a partir de</span><strong>{{brl(fromPrice(product()))}}</strong><span class="per">/mês</span></div>
+    <p class="prod-plans">{{product().tiers.length}} planos · escolha o que cabe na sua operação</p>
+    <div class="actions"><a class="button" [routerLink]="['/produtos', product().key.toLowerCase()]">Ver planos e preços<span aria-hidden="true">→</span></a></div>
+  } @else {
+    <span class="prod-note">Em desenvolvimento</span>
+  }
+</article>

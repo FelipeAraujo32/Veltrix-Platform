@@ -1,0 +1,21 @@
+# ==============================================================================
+# Perfil `prod` (fail-closed) — deploy via compose.yml raiz.
+# Regra: NENHUM default inseguro. Segredos chegam por Docker secrets montados em
+# /run/secrets e importados como properties via configtree (o nome do arquivo do
+# secret É o nome da property), ou por env var SEM fallback. Se faltar, o
+# serviço NÃO sobe.
+#   /run/secrets/spring.datasource.password  -> spring.datasource.password
+#   /run/secrets/veltrix-jwt-private.pem     -> arquivo lido por jwt.private-key-path
+# Validação de presença/não-branco: ProdSecretsGuard (@Profile("prod")).
+# ==============================================================================
+spring:
+  config:
+    import:
+      - optional:configtree:/run/secrets/
+  jpa:
+    hibernate:
+      ddl-auto: validate
+
+security:
+  # Sem fallback para localhost em produção: origens permitidas são explícitas.
+  allowed-origins: ${AUTH_ALLOWED_ORIGINS}

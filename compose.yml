@@ -1,0 +1,209 @@
+# Veltrix Platform — orquestração do NÚCLEO da plataforma via Docker Compose.
+# Sobe: SQL Server + Redis (infra), auth + gateway (kernel) e o portal-home
+# (frontend). Módulos de negócio (ouvidoria, finance, billing, ...) moram em
+# projetos próprios e se plugam neste kernel (registry/rotas no gateway).
+#
+#   docker compose --env-file .env up -d --build
+#
+# SEGREDOS: mecanismo `secrets:` do compose (arquivos em ./secrets/, dir gitignored).
+# São só DOIS arquivos: a senha do SQL Server e a chave privada JWT — sem eles a
+# stack não existe (banco não sobe, ninguém loga). O backend roda com
+# SPRING_PROFILES_ACTIVE=prod e lê /run/secrets via
+# `spring.config.import: optional:configtree:/run/secrets/` — o `target` de cada
+# secret É o nome da property Spring (ex.: spring.datasource.password).
+# Fail-closed: secret obrigatório ausente => o serviço NÃO sobe (ProdSecretsGuard).
+# Como criar os arquivos: veja a seção "SECRETS" no .env.example.
+#
+# SEM EDGE TLS AQUI: neste projeto o gateway (8080) e o portal (4200) são
+# publicados direto no host para desenvolvimento/homologação. Na hora de expor
+# publicamente, coloque um edge TLS à frente (nginx/Cloudflare) e remova os
+# `ports:` de gateway/portal.
+
+networks:
+  veltrix:
+    driver: bridge
+
+volumes:
+  sql-data: {}
+  redis-data: {}
+
+# Segredos file-based (nunca versionados; `secrets/` está no .gitignore).
+# Por padrão o auth reutiliza a senha do SA (crie login dedicado em produção).
+secrets:
+  mssql_sa_password:
+    file: ${MSSQL_SA_PASSWORD_FILE:-./secrets/mssql_sa_password}
+  auth_db_password:
+    file: ${AUTH_DB_PASSWORD_FILE:-./secrets/mssql_sa_password}
+  jwt_private_key:
+    file: ${JWT_PRIVATE_KEY_HOST_PATH:-./secrets/jwt-private.pem}
+
+services:
+  # ---------------------------------------------------------------- infra
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+    secrets: [mssql_sa_password]
+    # A imagem oficial NÃO suporta MSSQL_SA_PASSWORD_FILE (convenção *_FILE);
+    # o wrapper exporta a senha a partir do Docker secret só no processo do
+    # sqlservr e delega ao ENTRYPOINT ORIGINAL da imagem (launch_sqlservr.sh), que
+    # roda o permissions_check (banner) e então `exec` o sqlservr passado em command.
+    # ATENÇÃO: NÃO delegar a permissions_check.sh — na imagem 2022-latest ele é só
+    # informativo (imprime o banner e SAI), o que fazia o container encerrar em
+    # exit 0 sem subir o SQL Server. launch_sqlservr.sh é o launcher correto.
+    # Fail-closed: se ./secrets/mssql_sa_password não existir, o `up` falha.
+    entrypoint: ["/bin/bash", "-c", "export MSSQL_SA_PASSWORD=\"$$(cat /run/secrets/mssql_sa_password)\" && exec /opt/mssql/bin/launch_sqlservr.sh \"$$@\"", "--"]
+    command: ["/opt/mssql/bin/sqlservr"]
+    networks: [veltrix]
+    volumes:
+      - "sql-data:/var/opt/mssql"
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$(cat /run/secrets/mssql_sa_password)\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  # Cria o banco do auth (idempotente) e encerra.
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    depends_on:
+      sqlserver: { condition: service_healthy }
+    secrets: [mssql_sa_password]
+    networks: [veltrix]
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - >
+        /opt/mssql-tools18/bin/sqlcmd -S sqlserver -U sa -P "$$(cat /run/secrets/mssql_sa_password)" -C
+        -Q "IF DB_ID('veltrix_auth') IS NULL CREATE DATABASE veltrix_auth;"
+
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    networks: [veltrix]
+    volumes: ["redis-data:/data"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+  # ---------------------------------------------------------------- auth (emissor JWT)
+  auth-service:
+    build: { context: ., dockerfile: security/auth-service/Dockerfile }
+    depends_on:
+      db-init: { condition: service_completed_successfully }
+      redis: { condition: service_healthy }
+    networks: [veltrix]
+    # Segredos via mecanismo `secrets:` (arquivos file-based, não env).
+    # `target` = nome da property Spring (importada via configtree em /run/secrets).
+    # Fail-closed: arquivo de secret ausente => o `up` falha (não sobe container).
+    secrets:
+      - source: auth_db_password
+        target: spring.datasource.password
+      - source: jwt_private_key
+        target: veltrix-jwt-private.pem
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      AUTH_SERVER_PORT: 8082
+      DB_URL: jdbc:sqlserver://sqlserver:1433;databaseName=veltrix_auth;encrypt=true;trustServerCertificate=${SQL_TRUST_SERVER_CERT:-false}
+      DB_USERNAME: ${AUTH_DB_USERNAME:-sa}
+      JWT_PRIVATE_KEY_PATH: /run/secrets/veltrix-jwt-private.pem
+      JWT_KEY_ID: ${JWT_KEY_ID:?defina JWT_KEY_ID no .env}
+      JWT_ISSUER: ${JWT_ISSUER:?defina JWT_ISSUER no .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?defina JWT_AUDIENCE no .env}
+      JWT_ACCESS_TTL_SECONDS: ${JWT_ACCESS_TTL_SECONDS:-900}
+      JWT_REFRESH_TTL_SECONDS: ${JWT_REFRESH_TTL_SECONDS:-2592000}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      AUTH_ALLOWED_ORIGINS: ${AUTH_ALLOWED_ORIGINS:-http://localhost:4200}
+      AUTH_BOOTSTRAP_ENABLED: ${AUTH_BOOTSTRAP_ENABLED:-false}
+      AUTH_BOOTSTRAP_EMAIL: ${AUTH_BOOTSTRAP_EMAIL:-}
+      AUTH_BOOTSTRAP_PASSWORD: ${AUTH_BOOTSTRAP_PASSWORD:-}
+      AUTH_BOOTSTRAP_NAME: ${AUTH_BOOTSTRAP_NAME:-Administrador}
+      # Lockout de login usa Redis. Sem AUTH_REDIS_URL o serviço cairia no default
+      # localhost:6379 (não há Redis no container do auth) e o lockout ficaria fail-open.
+      AUTH_REDIS_URL: redis://redis:6379
+      AUTH_REDIS_TIMEOUT: ${AUTH_REDIS_TIMEOUT:-300ms}
+      AUTH_REDIS_CONNECT_TIMEOUT: ${AUTH_REDIS_CONNECT_TIMEOUT:-500ms}
+      # Peers confiáveis (CIDR) p/ derivar o IP real do cliente. O auth fica atrás do gateway
+      # na bridge interna do compose; sem isso a chave de lockout conta+IP colapsa para
+      # conta+constante (IP do gateway) e um atacante trancaria a vítima barato. Estreite em prod.
+      AUTH_TRUSTED_PROXIES: ${AUTH_TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      AUTH_LOCKOUT_MAX_ATTEMPTS: ${AUTH_LOCKOUT_MAX_ATTEMPTS:-5}
+      AUTH_LOCKOUT_BASE_BLOCK: ${AUTH_LOCKOUT_BASE_BLOCK:-1m}
+      AUTH_LOCKOUT_MAX_BLOCK: ${AUTH_LOCKOUT_MAX_BLOCK:-15m}
+      AUTH_LOCKOUT_FAIL_WINDOW: ${AUTH_LOCKOUT_FAIL_WINDOW:-15m}
+      AUTH_LOCKOUT_ACCOUNT_MAX_ATTEMPTS: ${AUTH_LOCKOUT_ACCOUNT_MAX_ATTEMPTS:-30}
+      AUTH_LOCKOUT_ACCOUNT_BLOCK: ${AUTH_LOCKOUT_ACCOUNT_BLOCK:-5m}
+      AUTH_LOCKOUT_ACCOUNT_FAIL_WINDOW: ${AUTH_LOCKOUT_ACCOUNT_FAIL_WINDOW:-10m}
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  # ---------------------------------------------------------------- gateway
+  api-gateway:
+    build: { context: ., dockerfile: security/api-gateway/Dockerfile }
+    depends_on:
+      auth-service: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    networks: [veltrix]
+    # Publicado no host para dev/homolog. Ao colocar edge TLS à frente, remova.
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      GATEWAY_SERVER_PORT: 8080
+      AUTH_SERVICE_URI: http://auth-service:8082
+      JWT_JWK_SET_URI: http://auth-service:8082/.well-known/jwks.json
+      JWT_ISSUER: ${JWT_ISSUER:?defina JWT_ISSUER no .env}
+      JWT_AUDIENCE: ${JWT_AUDIENCE:?defina JWT_AUDIENCE no .env}
+      GATEWAY_REDIS_URL: redis://redis:6379
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:4200}
+      # HSTS na borda da stack (TLS termina no edge externo). Fail-safe: ligado por padrão.
+      GATEWAY_HSTS_ENABLED: ${GATEWAY_HSTS_ENABLED:-true}
+      # Rate-limit. trusted-proxies em CIDR (ClientIpResolver do gateway). Estreite em prod.
+      RATE_LIMIT_TRUSTED_PROXIES: ${RATE_LIMIT_TRUSTED_PROXIES:-10.0.0.0/8,172.16.0.0/12,192.168.0.0/16}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      RATE_LIMIT_LOGIN_LIMIT: ${RATE_LIMIT_LOGIN_LIMIT:-10}
+      RATE_LIMIT_LOGIN_WINDOW: ${RATE_LIMIT_LOGIN_WINDOW:-1m}
+      RATE_LIMIT_GLOBAL_LIMIT: ${RATE_LIMIT_GLOBAL_LIMIT:-300}
+      RATE_LIMIT_GLOBAL_WINDOW: ${RATE_LIMIT_GLOBAL_WINDOW:-1m}
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  # ---------------------------------------------------------------- frontend
+  portal-home:
+    build:
+      context: .
+      dockerfile: home/portal-home/Dockerfile
+      args:
+        APP_NAME: portal-home
+    image: veltrix/portal-home:local
+    depends_on:
+      api-gateway: { condition: service_healthy }
+    networks: [veltrix]
+    # Publicado no host para dev/homolog. Ao colocar edge TLS à frente, remova.
+    ports:
+      - "4200:8080"
+    environment:
+      API_BASE_URL: ${PORTAL_API_BASE_URL-http://localhost:8080}
+      PORTAL_URL: ${PORTAL_URL:-http://localhost:4200}
+      GATEWAY_HOST: api-gateway
+      GATEWAY_PORT: 8080
+    read_only: true
+    tmpfs:
+      - /etc/nginx/conf.d:uid=101,gid=101,mode=0755
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    expose: ["8080"]

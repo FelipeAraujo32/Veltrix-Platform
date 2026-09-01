@@ -1,0 +1,134 @@
+<section class="hero">
+  <div class="hero-glow" aria-hidden="true"></div>
+  <div class="page hero-grid">
+    <div class="hero-copy">
+      <span class="eyebrow eyebrow-light">Inteligência Operacional Integrada</span>
+      <h1>Seus sistemas de atendimento em <span class="key-word">um só acesso</span>.</h1>
+      <p class="lead">Uma plataforma, vários módulos: cada sistema entra no mesmo login e na mesma fatura. Contrate só o que a sua organização precisa — um login para a equipe, uma fatura para a organização.</p>
+      <div class="actions">
+        @if (auth.isAuthenticated()) {
+          <a class="button button-accent" [routerLink]="auth.areaClienteLink()">Ir para meus sistemas<span class="arrow" aria-hidden="true">→</span></a>
+        } @else {
+          <a class="button button-accent" routerLink="/produtos">Conhecer os produtos<span class="arrow" aria-hidden="true">→</span></a>
+        }
+        <a class="button button-glass" routerLink="/contato">Falar com a Veltrix</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="page mechanics">
+  <span class="eyebrow">Como funciona</span>
+  <h2>Um login por pessoa. Uma fatura por organização.</h2>
+  <p class="lead mechanics-lead">Ninguém configura acesso à mão. A cada entrada no portal, cruzamos quem a pessoa é com o que a organização contratou — e liberamos só isso.</p>
+
+  <div class="equation">
+    <article class="term card">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.4"/><circle cx="9" cy="10.5" r="2.2"/><path d="M5.6 16.4c.5-1.7 1.9-2.6 3.4-2.6s2.9.9 3.4 2.6"/><path d="M15 9.5h3.2M15 12.5h3.2M15 15.5h2.2"/></svg>
+      </span>
+      <span class="term-key readout">Identidade</span>
+      <h3>Quem é você</h3>
+      <p>Cada pessoa tem um único login, com papéis e permissões definidos pela sua organização — gestor, atendente, financeiro.</p>
+    </article>
+
+    <span class="op" aria-hidden="true">×</span>
+
+    <article class="term card">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="16" cy="12" r="3"/></svg>
+      </span>
+      <span class="term-key readout">Contratação</span>
+      <h3>O que você contratou</h3>
+      <p>Contrate um módulo hoje e ligue os outros quando precisar. A fatura cobra só o que está ativo.</p>
+    </article>
+
+    <span class="op" aria-hidden="true">=</span>
+
+    <article class="term card term-result">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="4"/><path d="M11 11l7 7M15.5 14.5l2 2M18 12l3 3"/></svg>
+      </span>
+      <span class="term-key readout">Acesso</span>
+      <h3>Só o que é seu</h3>
+      <p>Cruzamos os dois a cada acesso: cada pessoa entra nos módulos contratados, com as permissões do seu papel — e nada além disso.</p>
+    </article>
+  </div>
+</section>
+
+<section class="page modules">
+  <span class="eyebrow">Módulos</span>
+  <h2>Módulos que já nascem conectados.</h2>
+  <p class="lead">Cada módulo tem seu preço e entra no mesmo login e na mesma fatura. Contrate só o que faz sentido hoje.</p>
+  <div class="prod-grid">
+    @for (product of products; track product.key) {
+      <app-produto-card [product]="product" />
+    }
+  </div>
+  <p class="modules-all"><a routerLink="/produtos">Ver todos os produtos<span aria-hidden="true"> →</span></a></p>
+</section>
+
+<section class="page security">
+  <span class="eyebrow">Segurança</span>
+  <h2>Feito para quem não pode errar no atendimento.</h2>
+  <div class="sec-grid">
+    <article class="sec-item">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h8l4 4v13H6Z"/><path d="M9 8.5h3M9 12h6M9 15.5h6"/></svg>
+      </span>
+      <h3>Acesso auditado</h3>
+      <p>Cada entrada fica registrada: quem acessou, qual módulo e quando.</p>
+    </article>
+    <article class="sec-item">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5l7 2.8v5.2c0 4.6-3 7.6-7 9-4-1.4-7-4.4-7-9V6.3Z"/><path d="M9 11.8l2.2 2.2 4.2-4.4"/></svg>
+      </span>
+      <h3>Sessão protegida</h3>
+      <p>Login renovado com segurança; ao sair, a sessão é revogada no servidor e nenhuma aba consegue renová-la.</p>
+    </article>
+    <article class="sec-item">
+      <span class="term-ic" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/></svg>
+      </span>
+      <h3>Só o que foi contratado</h3>
+      <p>A permissão é conferida a cada acesso, por pessoa e por módulo.</p>
+    </article>
+  </div>
+</section>
+
+<section class="brand-strip" aria-hidden="true">
+  <img src="branding/capa-veltrix.jpg" alt="" loading="lazy">
+</section>
+
+<section class="page quem-somos">
+  <span class="eyebrow">Quem somos</span>
+  <h2>A Veltrix organiza a operação de quem atende o público.</h2>
+  <p class="lead">Somos uma plataforma de inteligência operacional integrada para órgãos públicos e empresas que atendem o público. Identidade, contratação e módulos de atendimento moram no mesmo lugar: um login por pessoa, uma fatura por organização e acesso auditado em cada módulo — a sua operação cresce contratando módulos, não sistemas avulsos.</p>
+  <div class="actions">
+    <a class="button button-secondary" routerLink="/sobre">Conheça a Veltrix</a>
+    <a class="button button-accent" routerLink="/produtos">Ver os produtos</a>
+  </div>
+</section>
+
+<section class="page prod-help">
+  <div class="card">
+    <div>
+      <h2>Não sabe por onde começar?</h2>
+      <p class="muted">Conte como é o seu atendimento hoje e a gente monta o conjunto de módulos ideal.</p>
+    </div>
+    <a class="button button-secondary" routerLink="/contato">Falar com a Veltrix</a>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="page cta-inner">
+    <div>
+      <h2>Comece pelo que você precisa hoje. Adicione o resto quando fizer sentido.</h2>
+      <p>Preço por módulo, contratação online e um só login para toda a equipe.</p>
+    </div>
+    <div class="actions">
+      <a class="button button-accent" routerLink="/produtos">Conhecer os produtos</a>
+      <a class="button button-glass" routerLink="/contato">Falar com a Veltrix</a>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+# Contexto raiz é usado pelos builds dos serviços Java (compose.yml).
+# Mantém segredos e artefatos fora do contexto de build.
+.git
+.claude
+.env
+**/.env
+secrets/
+**/secrets/
+*.pem
+**/*.pem
+*.key
+**/*.key
+**/target/
+**/node_modules/
+**/dist/
+**/.angular/

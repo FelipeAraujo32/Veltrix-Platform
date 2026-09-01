@@ -1,0 +1,68 @@
+# TLS terminates at the external LB/CDN, which sits in front of this nginx and speaks plain HTTP to
+# it (LB -> nginx is HTTP, so $scheme here is always "http"). To keep the client-facing scheme, we
+# forward the LB's X-Forwarded-Proto when present, falling back to $scheme for local/dev where nginx
+# is hit directly. PREMISE for production: the LB is the only trusted hop in front of nginx and it
+# sets/overwrites X-Forwarded-Proto; if the LB does NOT, or if untrusted traffic can reach nginx
+# directly, a client could spoof this value — confirm the LB overwrites it before relying on this.
+map $http_x_forwarded_proto $veltrix_forwarded_proto {
+  default $http_x_forwarded_proto;
+  ""      $scheme;
+}
+
+server {
+  listen 8080;
+  server_name _;
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # TLS terminates at the external LB/CDN; HSTS is emitted at our edge (browsers ignore it on plain HTTP).
+  add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+  add_header X-Content-Type-Options "nosniff" always;
+  add_header X-Frame-Options "DENY" always;
+  add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+  add_header Permissions-Policy "camera=(), microphone=(), payment=()" always;
+  add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' ${API_BASE_URL}; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'" always;
+  add_header Cross-Origin-Opener-Policy "same-origin" always;
+  add_header Cross-Origin-Resource-Policy "same-origin" always;
+
+  location /api/ {
+    proxy_pass http://${GATEWAY_HOST}:${GATEWAY_PORT};
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    # Propagate the client-facing scheme from the trusted LB (falls back to $scheme locally),
+    # instead of hardcoding $scheme which is always "http" on the LB->nginx hop. This lets the
+    # gateway/downstream see https end-to-end.
+    proxy_set_header X-Forwarded-Proto $veltrix_forwarded_proto;
+    # Strip any client-supplied X-Forwarded-Host / Forwarded: the gateway does NOT filter these by
+    # trusted-proxies (only X-Forwarded-For is IP-filtered), so a spoofed host would otherwise flow
+    # downstream. Host canonicalization stays with $host above. Empty string == remove the header.
+    proxy_set_header X-Forwarded-Host "";
+    proxy_set_header Forwarded "";
+    proxy_read_timeout 30s;
+    client_max_body_size 25m;
+  }
+
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  location = /runtime-config.js {
+    default_type application/javascript;
+    add_header Cache-Control "no-store";
+    # location-level add_header discards inherited server-level headers; re-add the critical ones.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    alias /tmp/runtime-config.js;
+  }
+
+  location ~* \.(?:js|css|ico|png|svg|woff2)$ {
+    expires 7d;
+    add_header Cache-Control "public, immutable";
+    # location-level add_header discards inherited server-level headers; re-add the critical ones.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    try_files $uri =404;
+  }
+}

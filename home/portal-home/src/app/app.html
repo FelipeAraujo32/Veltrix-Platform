@@ -1,0 +1,23 @@
+<a class="skip-link" href="#conteudo">Ir para o conteúdo principal</a>
+<header class="topbar"><a class="brand" routerLink="/"><img class="brand-logo" src="branding/logo-topbar.png" alt="Veltrix — Inteligência Operacional Integrada"></a><nav id="main-nav" aria-label="Navegação principal" [class.open]="navOpen()"><a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">Início</a><a routerLink="/produtos" routerLinkActive="active">Produtos</a><a routerLink="/sobre" routerLinkActive="active">Sobre</a></nav><div class="top-actions">@if(auth.sessionLoading()){<span class="nav-cta nav-skeleton" aria-hidden="true"></span>}@else if(auth.authenticated()){<div class="user-menu"><button type="button" class="user-trigger" aria-haspopup="true" [attr.aria-expanded]="menuOpen()" aria-controls="user-menu-panel" (click)="toggleMenu()"><span class="avatar" aria-hidden="true">{{initials()}}</span><span class="user-name">{{auth.user()?.name || auth.user()?.email}}</span><span class="chev" aria-hidden="true">▾</span></button>@if(menuOpen()){<div class="user-panel" id="user-menu-panel"><a routerLink="/apps" (click)="closeMenu()">Meus sistemas</a><button type="button" class="danger" (click)="auth.logout('/')" aria-label="Sair da conta">Sair</button></div>}</div>}@else{<a class="nav-cta" routerLink="/login">Área do cliente</a>}<button #navToggle type="button" class="nav-toggle" [attr.aria-expanded]="navOpen()" aria-controls="main-nav" [attr.aria-label]="navOpen() ? 'Fechar menu de navegação' : 'Abrir menu de navegação'" (click)="toggleNav()">@if(navOpen()){<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>}@else{<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>}</button></div></header>
+<main id="conteudo"tabindex="-1"><router-outlet/></main>
+<footer>
+  <div class="foot-grid">
+    <nav class="foot-col" aria-label="Produto">
+      <strong>Produto</strong>
+      <a routerLink="/produtos">Todos os produtos</a>
+    </nav>
+    <nav class="foot-col" aria-label="Veltrix">
+      <strong>Veltrix</strong>
+      <a routerLink="/sobre">Sobre</a>
+      <a routerLink="/contato">Fale com a Veltrix</a>
+      <a [routerLink]="auth.areaClienteLink()">Área do cliente</a>
+    </nav>
+    <div class="foot-col foot-about">
+      <strong class="foot-slogan">Inteligência Operacional Integrada</strong>
+      <p>Um login por pessoa, uma fatura por organização e acesso auditado em cada módulo.</p>
+    </div>
+  </div>
+  <!-- TODO: CNPJ, endereço e links de Privacidade/Termos quando existirem. -->
+  <p class="foot-copy">© {{ year }} Veltrix</p>
+</footer>
